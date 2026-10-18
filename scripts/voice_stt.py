@@ -22,6 +22,7 @@ import shutil
 import tempfile
 import urllib.request
 import json
+import time
 from pathlib import Path
 
 # Asegurar acceso a paquetes de usuario (~/.local)
@@ -52,8 +53,20 @@ def get_powershell_executable() -> str:
             return c
     return ""
 
+def get_windows_temp_dir() -> tuple:
+    """Retorna (wsl_temp_path, win_temp_path)."""
+    users_dir = Path("/mnt/c/Users")
+    if users_dir.exists():
+        for u in users_dir.iterdir():
+            if u.is_dir() and not u.name.startswith("Default") and u.name != "Public":
+                t = u / "AppData" / "Local" / "Temp"
+                if t.exists():
+                    win_p = f"C:\\Users\\{u.name}\\AppData\\Local\\Temp"
+                    return str(t), win_p
+    return "/tmp", "C:\\Windows\\Temp"
+
 def record_windows_powershell(duration: int = 5, output_wav: str = None) -> str:
-    """Captura audio del micrófono de Windows usando la API nativa WinMM de Windows."""
+    """Captura audio del micrófono de Windows usando un script temporal .ps1 con la API nativa WinMM."""
     ps_exe = get_powershell_executable()
     if not ps_exe:
         return ""
@@ -62,44 +75,56 @@ def record_windows_powershell(duration: int = 5, output_wav: str = None) -> str:
         fd, output_wav = tempfile.mkstemp(suffix=".wav", prefix="antigravity_mic_")
         os.close(fd)
 
+    wsl_temp, win_temp = get_windows_temp_dir()
+    unique_id = f"{os.getpid()}_{int(time.time())}"
+    ps1_filename = f"antigravity_rec_{unique_id}.ps1"
+    wav_filename = f"antigravity_mic_{unique_id}.wav"
+
+    wsl_ps1_path = os.path.join(wsl_temp, ps1_filename)
+    win_ps1_path = f"{win_temp}\\{ps1_filename}"
+    wsl_wav_path = os.path.join(wsl_temp, wav_filename)
+    win_wav_path = f"{win_temp}\\{wav_filename}"
+
+    ps_code = f"""Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public class WinMM {{
+    [DllImport("winmm.dll", EntryPoint="mciSendStringA", CharSet=CharSet.Ansi)]
+    public static extern int mciSendString(string command, string buffer, int bufferSize, IntPtr hwndCallback);
+}}
+"@
+[WinMM]::mciSendString("open new type waveaudio alias recsound", [string]::Empty, 0, [IntPtr]::Zero)
+[WinMM]::mciSendString("record recsound", [string]::Empty, 0, [IntPtr]::Zero)
+Start-Sleep -Seconds {duration}
+[WinMM]::mciSendString("save recsound {win_wav_path}", [string]::Empty, 0, [IntPtr]::Zero)
+[WinMM]::mciSendString("close recsound", [string]::Empty, 0, [IntPtr]::Zero)
+"""
+
     print(f"[🎙️] Grabando audio con micrófono de Windows durante {duration} segundos... (Habla ahora)", file=sys.stderr)
 
-    ps_code = f"""
-    Add-Type -TypeDefinition @"
-    using System;
-    using System.Runtime.InteropServices;
-    public class WinMM {{
-        [DllImport("winmm.dll", EntryPoint="mciSendStringA", CharSet=CharSet.Ansi)]
-        public static extern int mciSendString(string command, string buffer, int bufferSize, IntPtr hwndCallback);
-    }}
-    "@
-    [WinMM]::mciSendString('open new type waveaudio alias recsound', [string]::Empty, 0, [IntPtr]::Zero)
-    [WinMM]::mciSendString('record recsound', [string]::Empty, 0, [IntPtr]::Zero)
-    Start-Sleep -Seconds {duration}
-    $p = [System.IO.Path]::GetTempPath() + 'antigravity_mic_{os.getpid()}.wav'
-    [WinMM]::mciSendString('save recsound ' + $p, [string]::Empty, 0, [IntPtr]::Zero)
-    [WinMM]::mciSendString('close recsound', [string]::Empty, 0, [IntPtr]::Zero)
-    Write-Output $p
-    """
-
     try:
-        res = subprocess.run([ps_exe, "-NoProfile", "-Command", ps_code], stdin=subprocess.DEVNULL, capture_output=True)
-        out_str = res.stdout.decode("latin1", errors="replace").strip()
-        lines = [l.strip() for l in out_str.splitlines() if l.strip()]
-        if lines:
-            win_path = lines[-1]
-            if win_path.startswith("C:") or win_path.startswith("c:"):
-                wsl_path = "/mnt/c" + win_path[2:].replace("\\", "/")
-                if os.path.exists(wsl_path) and os.path.getsize(wsl_path) > 0:
-                    shutil.copyfile(wsl_path, output_wav)
-                    try:
-                        os.remove(wsl_path)
-                    except Exception:
-                        pass
-                    print(f"[✓] Grabación completada exitosamente: {output_wav}", file=sys.stderr)
-                    return output_wav
+        with open(wsl_ps1_path, "w", encoding="utf-8") as f:
+            f.write(ps_code)
+
+        subprocess.run([ps_exe, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", win_ps1_path],
+                       stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        if os.path.exists(wsl_wav_path) and os.path.getsize(wsl_wav_path) > 0:
+            shutil.copyfile(wsl_wav_path, output_wav)
+            try:
+                os.remove(wsl_wav_path)
+            except Exception:
+                pass
+            print(f"[✓] Grabación completada exitosamente: {output_wav}", file=sys.stderr)
+            return output_wav
     except Exception as e:
         print(f"[Error captura Windows] {e}", file=sys.stderr)
+    finally:
+        if os.path.exists(wsl_ps1_path):
+            try:
+                os.remove(wsl_ps1_path)
+            except Exception:
+                pass
 
     return ""
 
