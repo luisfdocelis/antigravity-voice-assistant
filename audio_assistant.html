@@ -729,8 +729,8 @@
     <!-- Barra de acciones rápidas para navegador y terminal -->
     <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; align-items:center; justify-content:space-between;">
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <a href="file:///home/fernando/antigravity-voice-assistant/audio_assistant.html" target="_blank" class="browser-btn" id="open-browser-btn" style="text-decoration:none;" title="Abrir asistente en tu navegador con permisos completos de micrófono">
-          🌐 Abrir en Navegador
+        <a href="http://localhost:54321" target="_blank" class="browser-btn" id="open-browser-btn" style="text-decoration:none;" title="Abrir asistente en tu navegador con permisos completos de micrófono">
+          🌐 Abrir en Navegador (localhost:54321)
         </a>
         <button class="icon-copy-btn" id="copy-cli-btn" onclick="copyCliCommand()" title="Copiar comando para dictar desde terminal">
           💻 Copiar Comando CLI
@@ -748,21 +748,22 @@
 </div>
 
 <div id="raw-text-source" style="display:none;">
-## 🎙️ Asistente de Voz y Diagnóstico de Micrófono
+## 🎙️ Servidor de Voz Activo en Localhost:54321
 
-Hemos identificado y solucionado el comportamiento de `Ctrl + Alt + D` y los permisos del micrófono.
-
----
-
-## 🔍 Causa Raíz
-1. **Enfoque de Atajos**: El reproductor vive dentro de un marco incrustado del chat. Para que detecte `Ctrl + Alt + D` o `Space`, haz un clic sobre la tarjeta del reproductor para enfocarla.
-2. **Micrófono en Marcos Incrustados**: Por seguridad, los marcos webview de Electron bloquean el acceso directo al micrófono del sistema.
+Hemos activado el servidor local para resolver el bloqueo del protocolo `file://` y del panel del IDE.
 
 ---
 
-## ⚡ Soluciones Rápidas Habilitadas
-1. **Abrir en Navegador**: En el menú de Dictar, pulsa **"Abrir en Navegador"** para dictar con tu micrófono nativo en Chrome o Firefox.
-2. **Dictar desde Terminal**: Usa `python3 scripts/voice_stt.py --record --duration 5` para transcribir directamente con Whisper local sin depender de marcos web.
+## 🔍 Causa del Bloqueo en Navegador y Chat
+1. **Protocolo `file://`**: Los navegadores modernos bloquean Web Speech API en URLs `file:///` porque no son consideradas un origen seguro.
+2. **Marco del IDE**: Los paneles de chat en Electron restringen el acceso al micrófono de Windows.
+
+---
+
+## ⚡ Solución Lista: Abre localhost:54321
+1. **Haz clic en el enlace**: Abre **`http://localhost:54321`** en Chrome o Edge.
+2. **Concede permiso**: El navegador te solicitará acceso al micrófono de Windows. Haz clic en **Permitir**.
+3. **Dicta con normalidad**: Pulsa el botón de micrófono o `Ctrl + Alt + D` y tus palabras se transcribirán en tiempo real.
 </div>
 
 <script>
@@ -1524,12 +1525,11 @@ Hemos identificado y solucionado el comportamiento de `Ctrl + Alt + D` y los per
     }
     if (resElem) {
       resElem.innerHTML = "<div style=\"background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
-        "<span style=\"color:#ef4444; font-weight:bold; font-size:13px;\">⚠️ El marco del chat no tiene acceso al micrófono de Windows</span><br>" +
-        "<span style=\"font-size:11px; color:#ffffff; line-height:1.4;\">Estás ejecutando el IDE sobre WSL2. Los marcos embebidos de Electron no permiten capturar audio de la tarjeta física.</span>" +
+        "<span style=\"color:#ef4444; font-weight:bold; font-size:13px;\">⚠️ El marco incrustado del chat restringe el micrófono</span><br>" +
+        "<span style=\"font-size:11px; color:#ffffff; line-height:1.4;\">Para habilitar el micrófono físico de Windows, abre el servidor local seguro en Chrome o Edge.</span>" +
         "</div>" +
         "<div style=\"font-size:12px; color:#ffffff; line-height:1.6;\">" +
-        "<strong>Para dictar por voz y comandos hands-free:</strong><br>" +
-        "👉 Pulsa el botón <strong>\"🌐 Abrir en Navegador\"</strong> abajo para abrirlo en Chrome o Edge donde tu micrófono funciona al 100%." +
+        "👉 Haz clic en <a href=\"http://localhost:54321\" target=\"_blank\" style=\"color:#38bdf8; font-weight:bold; text-decoration:underline;\">http://localhost:54321</a> o pulsa el botón <strong>\"🌐 Abrir en Navegador\"</strong> abajo." +
         "</div>";
     }
   }
@@ -1587,11 +1587,11 @@ Hemos identificado y solucionado el comportamiento de `Ctrl + Alt + D` y los per
     }
   }
 
-  const ASSISTANT_FILE_URL = "file:///home/fernando/antigravity-voice-assistant/audio_assistant.html";
+  const ASSISTANT_URL = "http://localhost:54321";
 
   function openInBrowser() {
     try {
-      window.open(ASSISTANT_FILE_URL, "_blank");
+      window.open(ASSISTANT_URL, "_blank");
     } catch (e) {
       console.warn("Could not open in browser:", e);
     }
