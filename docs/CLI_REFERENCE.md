@@ -51,6 +51,52 @@ Uses PowerShell and the native .NET assembly `System.Speech.Synthesis.SpeechSynt
 
 ---
 
+## 🎙️ Python STT CLI Bridge ([`scripts/voice_stt.py`](file:///home/fernando/antigravity-voice-assistant/scripts/voice_stt.py))
+
+Records microphone input and transcribes audio into text from the command line:
+
+```bash
+# Record 5 seconds and transcribe:
+python3 scripts/voice_stt.py --record --duration 5
+
+# Transcribe an existing WAV file:
+python3 scripts/voice_stt.py -f recording.wav --lang es
+```
+
+### Options
+
+| Flag | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `--record` | `flag` | `False` | Captures audio live from the default system microphone. |
+| `--duration` | `int` | `5` | Recording duration in seconds. |
+| `-f`, `--file` | `string` | `None` | Path to an existing WAV audio file. |
+| `--lang` | `string` | `"es"` | Target language code (`es`, `en`, `fr`, etc.). |
+---
+
+## 📢 Dev Audio Announcer & Git Diff ([`scripts/voice_notify.py`](file:///home/fernando/antigravity-voice-assistant/scripts/voice_notify.py))
+
+Executes any terminal build or test command and speaks the outcome, automatically extracting critical exceptions or errors on failure. Also narrates Git diff summaries.
+
+```bash
+# Announce test outcome (success or key error traceback):
+python3 scripts/voice_notify.py -- pytest
+python3 scripts/voice_notify.py -- bash .agents/scripts/verify.sh
+
+# Announce Git diff status before committing:
+python3 scripts/voice_notify.py --git-diff
+```
+
+### Options
+
+| Flag | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `COMMAND` | `list` | `[]` | The command to run, monitor, and audibly announce. |
+| `--git-diff` | `flag` | `False` | Audits modified files, insertions, and deletions in Git and speaks a natural summary. |
+| `-m`, `--message` | `string` | `""` | Direct message to announce via speech synthesizer. |
+| `--rate` | `float` | `1.0` | Speech playback rate multiplier. |
+
+---
+
 ## 🛠️ Modifying the UI Template
 
 The HTML widget lives at [`skills/accessible-voice-assistant/resources/audio-assistant-template.html`](file:///home/fernando/antigravity-voice-assistant/skills/accessible-voice-assistant/resources/audio-assistant-template.html).

@@ -31,13 +31,54 @@ When the voice assistant widget appears in chat or inside an editor split tab, y
 
 | Control | Description |
 | :--- | :--- |
-| **`⏮` Restart** | Restarts speech playback from the beginning of the text. |
+| **`⏮` Prev / Restart** | Jumps to previous section heading or restarts from the beginning. |
 | **`▶` Play / `⏸` Pause** | Toggles speech playback without losing your current progress. |
-| **`⏹` Stop** | Halts synthesis and resets playback position. |
+| **`⏭` Next Section** | Jumps directly to the next section heading. |
+| **`⏹` Stop** | Halts synthesis, plays subtle stop chime, and resets playback position. |
 | **`🔊` Volume Slider** | Expands a quick popover with a `0%` to `100%` volume slider. |
 | **`📄 Text ▾`** | Collapses or expands the pure white formatted text viewer. |
 | **`📋 Copy`** | Copies the raw formatted Markdown summary directly to your system clipboard. |
-| **`⚙️ Settings ▾`** | Toggles accessibility preferences and engine configuration drawer. |
+| **`⚙️ Settings ▾`** | Toggles accessibility preferences and visual themes drawer. |
+| **`⌨️ Shortcuts ▾`** | Displays accessible keyboard hotkeys for hands-free operation. |
+| **`🎙️ Dictar`** | Toggles live microphone for voice prompt dictation and voice commands. |
+
+---
+
+## ⌨️ Accessible Keyboard Shortcuts
+
+Operate the voice assistant without leaving your code editor or touching the mouse:
+
+| Shortcut | Action |
+| :--- | :--- |
+| **`Space`** / **`Ctrl + Alt + Space`** | Play / Pause speech |
+| **`Ctrl + Alt + R`** | Restart current section or speech |
+| **`Ctrl + Alt + S`** | Stop speech |
+| **`Ctrl + Alt + →`** | Skip to next section heading |
+| **`Ctrl + Alt + ←`** | Skip to previous section heading |
+| **`Ctrl + Alt + ↑`** | Increase speed (`+0.1x`) |
+| **`Ctrl + Alt + ↓`** | Decrease speed (`-0.1x`) |
+| **`Ctrl + Alt + M`** | Mute / Unmute audio |
+| **`Ctrl + Alt + D`** | Toggle microphone for voice dictation & commands |
+
+---
+
+## 🎙️ Hands-Free Voice Commands & Dictation
+
+When the microphone is active (indicated by a pulsating red badge `🔴` and an auditory chime), speak naturally:
+
+### 1. Voice Action Triggers
+Execute player and navigation actions hands-free:
+- *"Pausar"* / *"Detener"* / *"Para"*: Pauses speech playback.
+- *"Continuar"* / *"Reanudar"* / *"Reproducir"*: Resumes speech playback.
+- *"Siguiente"* / *"Avanza"*: Jumps to the next section heading.
+- *"Anterior"* / *"Regresa"*: Jumps to the previous section heading.
+- *"Reiniciar"* / *"Desde el inicio"*: Restarts playback from section 1.
+- *"Más rápido"* / *"Acelerar"*: Increases playback rate (`+0.1x`).
+- *"Más despacio"* / *"Más lento"*: Decreases playback rate (`-0.1x`).
+- *"Silencio"* / *"Mute"*: Toggles audio mute.
+
+### 2. Prompt Dictation
+Speak any development question or prompt. It is transcribed in real-time inside the **Dictation drawer** (`dictation-drawer`) and can be copied with one click via **`📋 Copiar Prompt`** into the Antigravity prompt area.
 
 ---
 
