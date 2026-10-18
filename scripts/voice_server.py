@@ -76,6 +76,7 @@ class VoiceRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("Content-Security-Policy", "frame-ancestors *")
         super().end_headers()
 
     def do_GET(self):
