@@ -1,10 +1,13 @@
-# Accessible Voice Assistant Rule (Baja Visión · Dark Theme)
+# Accessible Voice Assistant Rule (Low Vision · Dark Theme)
 
-El usuario tiene **baja visión** y utiliza el **tema oscuro (Dark Theme)**. En **todas las respuestas** el agente debe aplicar obligatoriamente la skill **`accessible-voice-assistant`**:
+The user has **low vision** and uses **Dark Theme**. In **all responses**, the agent must apply the **`accessible-voice-assistant`** skill:
 
-1. **Asistencia de Audio en el Prompt (`<agent-embed>`):**
-   - Generar/actualizar `<appDataDir>/brain/<conversation-id>/audio_assistant.html` a partir de la plantilla del asistente con `mainSummary` adaptado a la respuesta actual en español (`es-MX`) e incrustarlo al inicio con:
+1. **Audio Assistance in Prompt (`<agent-embed>`):**
+   - Generate/update `<appDataDir>/brain/<conversation-id>/audio_assistant.html` from the assistant template with `#raw-text-source` containing the response summary in the active language (English/Spanish or matching the conversation language).
+   - Embed it at the start of the response with:
      `<agent-embed src="file:///<artifact_path>/audio_assistant.html"></agent-embed>`.
-2. **Texto Blanco Puro (`#ffffff`) y Letra Grande:**
-   - En los widgets HTML usar fondo oscuro de alto contraste (`#0b1120`), texto blanco puro (`#ffffff`), bordes `#38bdf8`, foco `#facc15` y controles amplios.
-   - En el texto Markdown del chat, usar encabezados grandes (`##`), negritas, listas numeradas cortas y oraciones directas.
+2. **Pure White Text (`#ffffff`) and Large Typography:**
+   - In HTML widgets, use high-contrast dark background (`#0b1120`), pure white text (`#ffffff`), cyan borders (`#38bdf8`), and yellow focus rings (`#facc15`).
+   - In chat Markdown text, use large headings (`##`), bold highlights, short numbered lists, and concise, direct sentences.
+3. **Multilingual Speech Synthesis:**
+   - Supports auto-detection and speech synthesis in English, Spanish, French, German, and Portuguese with language-specific prefixes ("Section:", "Option:", "Step number:").

@@ -3,40 +3,43 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Theme: Dark High Contrast](https://img.shields.io/badge/Theme-Dark%20High%20Contrast-yellow.svg)](#)
 [![Accessibility: Low Vision](https://img.shields.io/badge/Accessibility-Low%20Vision-emerald.svg)](#)
+[![Multilingual: EN/ES/FR/DE/PT/IT/JA](https://img.shields.io/badge/Multilingual-EN%20%7C%20ES%20%7C%20FR%20%7C%20DE%20%7C%20PT-blueviolet.svg)](#)
 
-Un plugin y skill accesible para **Antigravity IDE** diseñado para personas con **baja visión** y usuarios de **tema oscuro**. 
+An accessible plugin and skill for **Antigravity IDE** designed for users with **low vision** and **dark theme** preferences.
 
-Proporciona un reproductor multimedia elegante y compacto con síntesis de voz en español (`es-MX`), vocalización estructurada de textos (opciones, listas y enlaces), 16 temas de alto contraste, control de velocidad, control de volumen desplegable y visualización en pestañas divididas.
-
----
-
-## ✨ Características
-
-- 🎙️ **Síntesis de Voz en Español (`es-MX`)**: Vocaliza encabezados, viñetas, opciones numeradas y enlaces con pausas naturales.
-- 🎛️ **Reproductor Compacto Estilo Media Player**: Controles de transporte (`⏮` Reiniciar, `▶`/`⏸` Reproducir/Pausar, `⏹` Detener).
-- 🔊 **Control de Volumen con Botón**: Icono de bocina que despliega un slider de 0% a 100% al hacer clic.
-- 🎨 **16 Temas de Alto Contraste**: 11 temas DaisyUI (Night, Dracula, Synthwave, Luxury, Forest, Aqua, Cyberpunk, etc.) + 5 temas para desarrolladores (Nord, Tokyo Night, Monokai, Solarized Dark, Black OLED).
-- ⚡ **Velocidad Regulable**: Deslizador de 0.5x a 2.0x con pasos de 0.1x.
-- ↕️ **Altura de Ventana sin Límite**: Control deslizante hasta 1000px y tirador de arrastre vertical libre (`resize: vertical`).
-- 📋 **Copia Rápida en Markdown**: Botón de un solo clic para copiar el texto con formato al portapapeles.
-- 🗗 **Modo Pestaña / Panel Dividido**: Permite fijar el asistente en una pestaña del editor junto a archivos de código o encima de la terminal.
+Provides an elegant, compact media-player-style voice assistant with multilingual speech synthesis (automatic language detection + manual selector for English, Spanish, French, German, Portuguese, Italian, Japanese), structured speech cadence (sections, options, steps, links), 16 high-contrast themes, volume slider popover, variable speed, pure white typography, and split-editor tab support.
 
 ---
 
-## 🚀 Instalación en Antigravity
+## ✨ Features
 
-### Instalación Global (Recomendada)
+- 🌐 **Multilingual Speech Synthesis & Auto-Detection**: Automatically detects the response language or allows choosing English (US/UK), Spanish (MX/ES), French, German, Portuguese, Italian, or Japanese.
+- 🎙️ **Structured Audio Cadence**: Speaks headings, bullets, numbered steps, and markdown links with natural pacing and language-appropriate cues.
+- 🎛️ **Compact Media Player**: Modern transport controls (`⏮` Restart, `▶`/`⏸` Play/Pause, `⏹` Stop, `⏻` Power).
+- 🔊 **Quick Volume Toggle**: Speaker icon that reveals a full 0% to 100% volume slider.
+- 🎨 **16 High-Contrast Themes**: 11 DaisyUI palettes (Night, Dracula, Synthwave, Luxury, Forest, Aqua, Cyberpunk, Coffee, Dim, Sunset, Emerald) + 5 developer favorites (Nord, Tokyo Night, Monokai, Solarized Dark, Black OLED).
+- ⚡ **Adjustable Speed**: Precise rate control from `0.5x` to `2.0x` in steps of `0.1x`.
+- 🔍 **Dynamic Text Scaling**: Font size slider (`14px` to `36px`) and widget scale adjustment (`50%` to `100%`).
+- 💧 **Background Opacity**: Control container transparency (`25%` to `100%`) while keeping pure white text (`#ffffff`) 100% crisp.
+- 📋 **One-Click Markdown Copy**: Instantly copy formatted text to the clipboard.
+- 🗗 **Split Tab / Panel Mode**: Pin the assistant in an editor split pane side-by-side with code or above the terminal.
 
-Clona este repositorio en el directorio de plugins de Antigravity:
+---
+
+## 🚀 Installation in Antigravity
+
+### Global Installation (Recommended)
+
+Clone this repository into your Antigravity plugins directory:
 
 ```bash
 git clone https://github.com/luisfdocelis/antigravity-voice-assistant.git ~/.gemini/config/plugins/accessible-voice-assistant
 ```
 
-¡Listo! Antigravity detectará el plugin automáticamente en todas tus sesiones.
+Antigravity will automatically detect the plugin across all your workspaces and projects.
 
 ---
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto se distribuye bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más información.
+Distributed under the **MIT** license. See [LICENSE](LICENSE) for details.

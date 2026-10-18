@@ -687,29 +687,34 @@ Aquí tienes las respuestas y opciones organizadas:
       if (!line) continue;
       if (line.match(/^---+$/) || line.match(/^\*\*\*+$/)) continue;
 
+      // Encabezados: leer el titulo directamente sin decir "Seccion:"
       if (line.match(/^#+\s+(.*)$/)) {
-        let title = line.replace(/^#+\s+/, "").replace(/[*`_]/g, "");
-        speechLines.push("Sección: " + title + ".");
+        let title = line.replace(/^#+\s+/, "").replace(/[*`_]/g, "").trim();
+        speechLines.push(title + ".");
         continue;
       }
 
-      line = line.replace(/\[([^\]]+)\]\([^\)]+\)/g, "enlace a $1");
+      // Enlaces: [texto](url) -> texto sin prefijos
+      line = line.replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1");
 
+      // Viñetas no ordenadas: leer contenido directo
       if (line.match(/^[\-\*]\s+(.*)$/)) {
-        let item = line.replace(/^[\-\*]\s+/, "").replace(/[*`_]/g, "");
-        speechLines.push("Opción: " + item + ".");
+        let item = line.replace(/^[\-\*]\s+/, "").replace(/[*`_]/g, "").trim();
+        speechLines.push(item + ".");
         continue;
       }
 
+      // Listas ordenadas: 1. Titulo -> 1. Titulo
       let orderedMatch = line.match(/^(\d+)\.\s+(.*)$/);
       if (orderedMatch) {
         let num = orderedMatch[1];
-        let item = orderedMatch[2].replace(/[*`_]/g, "");
-        speechLines.push("Paso número " + num + ": " + item + ".");
+        let item = orderedMatch[2].replace(/[*`_]/g, "").trim();
+        speechLines.push(num + ". " + item + ".");
         continue;
       }
 
-      line = line.replace(/[*`_~]/g, "");
+      // Parrafos normales
+      line = line.replace(/[*`_~]/g, "").trim();
       if (!line.endsWith(".") && !line.endsWith(":") && !line.endsWith("?") && !line.endsWith("!")) {
         line += ".";
       }
