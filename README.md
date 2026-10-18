@@ -51,6 +51,7 @@ For complete technical and user documentation, see:
 - 📖 [**User & Usage Guide**](docs/USER_GUIDE.md): Installation, media player controls, accessibility options, and split-tab setup.
 - 🏗️ [**Architecture & Design**](docs/ARCHITECTURE.md): Multi-engine overview, cadence formatting rules, and component breakdown.
 - 💻 [**CLI & Developer Reference**](docs/CLI_REFERENCE.md): Standalone CLI bridge usage, supported OS engines, and widget extension tips.
+- 🗺️ [**Product Roadmap**](docs/ROADMAP.md): Evolution plan, upcoming features (v1.2, v2.0, v3.0), and accessibility milestones.
 
 ---
 

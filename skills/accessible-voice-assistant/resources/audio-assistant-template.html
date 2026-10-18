@@ -438,6 +438,110 @@
     color: #ffffff;
     border-color: #10b981;
   }
+  /* Atajos de teclado accesibles */
+  .shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 16px;
+    padding: 6px 0;
+  }
+  .shortcut-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .shortcut-item span {
+    color: var(--player-subtext);
+    font-weight: 500;
+  }
+  kbd {
+    background: #0f172a;
+    border: 1px solid var(--player-accent);
+    color: #ffffff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+  /* Botón de micrófono y dictado por voz */
+  .badge-btn.mic-btn.active {
+    background: #ef4444 !important;
+    border-color: #f87171 !important;
+    color: #ffffff !important;
+    animation: mic-pulse 1.5s infinite;
+  }
+  @keyframes mic-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 7px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  }
+  .dictation-box {
+    margin-top: 6px;
+    padding: 10px 12px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid var(--player-accent);
+    border-radius: 8px;
+    font-size: 14px;
+    color: #ffffff;
+    min-height: 48px;
+    line-height: 1.5;
+  }
+  .command-tag {
+    display: inline-block;
+    background: var(--player-accent);
+    color: #0b1120;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+  }
+  .browser-btn {
+    background: #0284c7;
+    color: #ffffff;
+    border: 1px solid #38bdf8;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+  .browser-btn:hover {
+    background: #0369a1;
+    border-color: #7dd3fc;
+    transform: translateY(-1px);
+  }
+  .command-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .chip-btn {
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid var(--player-accent);
+    color: #ffffff;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .chip-btn:hover {
+    background: var(--player-accent);
+    color: #0b1120;
+    transform: translateY(-1px);
+  }
   /* Modo solo iconos */
   body.mode-icons .btn-lbl {
     display: none;
@@ -446,7 +550,7 @@
 </head>
 <body>
 
-<div class="player-card" id="card">
+<div class="player-card" id="card" tabindex="0" onclick="this.focus(); window.focus();" title="Haz clic en el reproductor para activar atajos de teclado">
   <div class="player-content">
     <!-- Primera Fila: Avatar, Info, Menú, Power/Stop -->
     <div class="top-row">
@@ -463,6 +567,12 @@
         </button>
         <button class="badge-btn" onclick="toggleDrawer('settings-drawer')" title="Ajustes">
           ⚙️<span class="btn-lbl"> Ajustes</span> <span id="set-arrow">▾</span>
+        </button>
+        <button class="badge-btn" onclick="toggleDrawer('shortcuts-drawer')" title="Atajos de teclado">
+          ⌨️<span class="btn-lbl"> Atajos</span> <span id="shortcuts-arrow">▾</span>
+        </button>
+        <button class="badge-btn mic-btn" id="mic-btn" onclick="toggleDictation()" title="Dictado por voz y comandos (Ctrl+Alt+D)">
+          <span id="mic-icon">🎙️</span><span class="btn-lbl"> Dictar</span>
         </button>
         <button class="power-btn" onclick="stopSpeech()" title="Detener">
           ⏻
@@ -486,9 +596,10 @@
       </div>
 
       <div class="media-buttons">
-        <button class="ctrl-btn" onclick="restartSpeech()" title="Reiniciar">⏮</button>
-        <button class="ctrl-btn play" id="play-btn" onclick="togglePlay()" title="Reproducir">▶</button>
-        <button class="ctrl-btn" onclick="stopSpeech()" title="Detener">⏹</button>
+        <button class="ctrl-btn" onclick="prevSection()" title="Sección anterior / Reiniciar (Ctrl+Alt+←)">⏮</button>
+        <button class="ctrl-btn play" id="play-btn" onclick="togglePlay()" title="Reproducir / Pausar (Space / Ctrl+Alt+Space)">▶</button>
+        <button class="ctrl-btn" onclick="nextSection()" title="Siguiente sección (Ctrl+Alt+→)">⏭</button>
+        <button class="ctrl-btn" onclick="stopSpeech()" title="Detener (Ctrl+Alt+S)">⏹</button>
       </div>
     </div>
   </div>
@@ -604,26 +715,87 @@
       </div>
     </div>
   </div>
+
+  <!-- Panel Desplegable: Atajos de Teclado -->
+  <div class="collapsible-drawer" id="shortcuts-drawer">
+    <div style="font-weight:bold; margin-bottom:8px; color:var(--player-accent); display:flex; justify-content:space-between; align-items:center;">
+      <span>⌨️ Atajos de Teclado Accesibles</span>
+      <span style="font-size:11px; color:var(--player-subtext);">Control global hands-free</span>
+    </div>
+    <div style="font-size:11px; color:#facc15; margin-bottom:8px; padding:5px 8px; background:rgba(250,204,21,0.1); border-radius:5px; border-left:3px solid #facc15; line-height:1.4;">
+      💡 <strong>Importante:</strong> Haz clic dentro del reproductor para enfocarlo antes de usar los atajos de teclado.
+    </div>
+    <div class="shortcuts-grid">
+      <div class="shortcut-item"><span>Reproducir / Pausa</span><div><kbd>Space</kbd> / <kbd>Ctrl+Alt+Space</kbd></div></div>
+      <div class="shortcut-item"><span>Reiniciar audio / sección</span><div><kbd>Ctrl+Alt+R</kbd></div></div>
+      <div class="shortcut-item"><span>Detener reproducción</span><div><kbd>Ctrl+Alt+S</kbd></div></div>
+      <div class="shortcut-item"><span>Siguiente sección</span><div><kbd>Ctrl+Alt+→</kbd></div></div>
+      <div class="shortcut-item"><span>Sección anterior</span><div><kbd>Ctrl+Alt+←</kbd></div></div>
+      <div class="shortcut-item"><span>Acelerar (+0.1x)</span><div><kbd>Ctrl+Alt+↑</kbd></div></div>
+      <div class="shortcut-item"><span>Desacelerar (-0.1x)</span><div><kbd>Ctrl+Alt+↓</kbd></div></div>
+      <div class="shortcut-item"><span>Silenciar / Desilenciar</span><div><kbd>Ctrl+Alt+M</kbd></div></div>
+      <div class="shortcut-item"><span>Dictado / Comandos de Voz</span><div><kbd>Ctrl+Alt+D</kbd></div></div>
+    </div>
+  </div>
+
+  <!-- Panel Desplegable: Dictado por Voz & Comandos -->
+  <div class="collapsible-drawer" id="dictation-drawer">
+    <div style="font-weight:bold; margin-bottom:6px; color:var(--player-accent); display:flex; justify-content:space-between; align-items:center;">
+      <span>🎙️ Dictado por Voz y Comandos Hands-Free</span>
+      <span id="dictation-status" style="font-size:11px; color:var(--player-subtext);">Listo</span>
+    </div>
+    <div class="dictation-box" id="dictation-result">
+      Haz clic en <strong>"🎙️ Hablar en Navegador"</strong> para dictar con tu micrófono de Windows en tiempo real, o usa los botones de comando rápido abajo.
+    </div>
+    
+    <!-- Barra de acciones rápidas para navegador y terminal -->
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; align-items:center; justify-content:space-between;">
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <a href="http://localhost:9000/?autoDictate=true" target="_blank" class="browser-btn" id="open-browser-btn" style="text-decoration:none;" title="Abrir asistente en tu navegador con permisos completos de micrófono">
+          🎙️ Hablar en Navegador (localhost:9000)
+        </a>
+        <button class="icon-copy-btn" id="copy-cli-btn" onclick="copyCliCommand()" title="Copiar comando para dictar desde terminal">
+          💻 Copiar CLI
+        </button>
+      </div>
+      <button class="icon-copy-btn" id="copy-dictation-btn" onclick="copyDictationText()" title="Copiar texto dictado al portapapeles">
+        📋 Copiar Prompt
+      </button>
+    </div>
+
+    <!-- Comandos rápidos con 1 clic (sin necesidad de micrófono) -->
+    <div style="margin-top:10px;">
+      <span style="font-size:11px; color:var(--player-subtext); font-weight:600;">Control rápido (1 clic):</span>
+      <div class="command-chips">
+        <button class="chip-btn" onclick="handleVoiceCommand('pausar')">⏸ Pausar</button>
+        <button class="chip-btn" onclick="handleVoiceCommand('continuar')">▶ Continuar</button>
+        <button class="chip-btn" onclick="handleVoiceCommand('siguiente')">⏭ Siguiente</button>
+        <button class="chip-btn" onclick="handleVoiceCommand('anterior')">⏮ Anterior</button>
+        <button class="chip-btn" onclick="handleVoiceCommand('reiniciar')">🔄 Reiniciar</button>
+        <button class="chip-btn" onclick="handleVoiceCommand('más rápido')">⚡ +Velocidad</button>
+        <button class="chip-btn" onclick="handleVoiceCommand('silencio')">🔇 Silenciar</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="raw-text-source" style="display:none;">
-## 🎙️ Asistente de Voz Accesible
+## 🎙️ Arquitectura Híbrida Establecida (Solución 2)
 
-Configuración del motor de audio original de CrowKit restablecida exitosamente.
-
----
-
-## 🎛️ Distribución en 3 Componentes por Fila
-1. **Fila 1**: `🎨 Tema Visual` · `⚡ Velocidad` · `📐 Ancho Widget`
-2. **Fila 2**: `🔍 Letra Texto` · `💧 Opacidad Fondo` · `🔘 Botones`
-3. **Fila 3**: `🎙️ Tipo de Voz` · `🗣️ Voz del Sistema`
+Hemos consolidado la Solución 2 como el estándar operativo del asistente de voz:
 
 ---
 
-## 🔊 Motor de Audio Original (CrowKit)
-- Síntesis de voz limpia mediante Web Speech API nativa.
-- Selección de timbre (Natural, Grave, Clara, Pausada) y sincronización con barra de progreso.
+## 1. Rendimiento y Calidad Auditiva
+- **Renderizado Visual Inmediato**: La tarjeta y los controles cargan al instante dentro de Antigravity IDE sin parpadeos ni latencia.
+- **Audio Neuronal en Tiempo Real**: Cada reproducción se transmite en vivo desde el servidor local (puerto 9000) usando las voces humanas de Microsoft Neural TTS (Dalia, Álvaro, Jorge).
+- **Fluidez Absoluta**: Modula velocidad, volumen y perfiles vocales conservando siempre la claridad humana.
 
+---
+
+## 2. Dictado y Comandos Hands-Free
+- **Micrófono de Windows**: Abre http://localhost:9000/?autoDictate=true en Chrome o Edge para dictado continuo con transcripción en vivo.
+- **Grabación por Terminal**: Ejecuta python3 scripts/voice_stt.py --record --duration 5
 </div>
 
 <script>
@@ -687,6 +859,59 @@ Configuración del motor de audio original de CrowKit restablecida exitosamente.
     return out.join("\n");
   }
 
+  // --- 1. Diccionario Fonético para Desarrolladores ---
+  function applyDevPronunciationLexicon(text) {
+    if (!text) return "";
+    let t = text;
+
+    // Bloques de código multilínea: anunciar brevemente
+    t = t.replace(/```[a-zA-Z0-9_-]*\n([\s\S]*?)```/g, ". Bloque de código omitido para agilidad auditiva. ");
+
+    // Operadores lógicos y de comparación
+    t = t.replace(/===/g, " estrictamente igual a ");
+    t = t.replace(/!==/g, " estrictamente diferente de ");
+    t = t.replace(/!=/g, " diferente de ");
+    t = t.replace(/==/g, " igual a ");
+    t = t.replace(/=>/g, " función flecha ");
+    t = t.replace(/->/g, " retorna ");
+    t = t.replace(/&&/g, " y además ");
+    t = t.replace(/\|\|/g, " o bien ");
+
+    // Términos técnicos, herramientas y acrónimos dev
+    const lexicon = [
+      [/\bJSON\b/gi, "yeison"],
+      [/\bAPIs\b/gi, "ápis"],
+      [/\bAPI\b/gi, "ápi"],
+      [/\bCLIs\b/gi, "ce-ele-ís"],
+      [/\bCLI\b/gi, "ce-ele-í"],
+      [/\bSQL\b/gi, "ese-cu-ele"],
+      [/\bregex\b/gi, "reg-ex"],
+      [/\basync\s*\/\s*await\b/gi, "eisinck y e-güeit"],
+      [/\basync\b/gi, "eisinck"],
+      [/\bawait\b/gi, "e-güeit"],
+      [/\bpytest\b/gi, "pai-test"],
+      [/\bPython\b/gi, "paiton"],
+      [/\bPRs\b/gi, "pull requests"],
+      [/\bPR\b/gi, "pull request"],
+      [/\bGitHub\b/gi, "guit-jab"],
+      [/\bGit\b/gi, "guit"],
+      [/\bnpm\b/gi, "ene-pe-eme"],
+      [/\bpip\b/gi, "pip"],
+      [/\bkubectl\b/gi, "cube-control"],
+      [/\bfrontend\b/gi, "front-end"],
+      [/\bbackend\b/gi, "back-end"],
+      [/\bUUID\b/gi, "u-u-i-de"],
+      [/\bGraphQL\b/gi, "graf-cu-ele"],
+      [/\bOAuth\b/gi, "o-ot"],
+      [/\bJWT\b/gi, "yei-doble-ve-te"]
+    ];
+
+    for (const [pattern, replacement] of lexicon) {
+      t = t.replace(pattern, replacement);
+    }
+    return t;
+  }
+
   function prepareTextForSpeech(md) {
     if (!md) return "";
     const lines = md.split("\n");
@@ -697,7 +922,7 @@ Configuración del motor de audio original de CrowKit restablecida exitosamente.
       if (!line) continue;
       if (line.match(/^---+$/) || line.match(/^\*\*\*+$/)) continue;
 
-      // Encabezados: leer el titulo directamente sin decir "Seccion:"
+      // Encabezados: leer el titulo directamente
       if (line.match(/^#+\s+(.*)$/)) {
         let title = line.replace(/^#+\s+/, "").replace(/[*`_]/g, "").trim();
         speechLines.push(title + ".");
@@ -730,41 +955,212 @@ Configuración del motor de audio original de CrowKit restablecida exitosamente.
       }
       speechLines.push(line);
     }
-    return speechLines.join(" ");
+    return applyDevPronunciationLexicon(speechLines.join(" "));
   }
 
-  const plainTextToSpeak = prepareTextForSpeech(markdownContent);
+  // --- 2. Segmentación de Secciones (Scrubbing / Section Navigation) ---
+  function parseSections(md) {
+    if (!md) return [{ title: "Inicio", text: "" }];
+    const lines = md.split("\n");
+    let secs = [];
+    let curTitle = "Inicio";
+    let curLines = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+      let headingMatch = line.match(/^#{1,3}\s+(.*)$/);
+      if (headingMatch) {
+        if (curLines.length > 0) {
+          const processed = prepareTextForSpeech(curLines.join("\n"));
+          if (processed.trim().length > 0) {
+            secs.push({ title: curTitle, text: processed });
+          }
+          curLines = [];
+        }
+        curTitle = headingMatch[1].replace(/[*`_]/g, "").trim();
+      }
+      curLines.push(line);
+    }
+    if (curLines.length > 0) {
+      const processed = prepareTextForSpeech(curLines.join("\n"));
+      if (processed.trim().length > 0) {
+        secs.push({ title: curTitle, text: processed });
+      }
+    }
+    if (secs.length === 0) {
+      secs.push({ title: "Respuesta", text: prepareTextForSpeech(md) });
+    }
+    return secs;
+  }
+
+  const sections = parseSections(markdownContent);
+  let currentSectionIndex = 0;
+  const plainTextToSpeak = sections.map(s => s.text).join(" ");
   const fullTextElem = document.getElementById("full-text");
   if (fullTextElem) fullTextElem.innerHTML = renderMarkdown(markdownContent);
 
   const synth = window.speechSynthesis;
   let currentVolume = 1.0;
+  let previousVolume = 1.0;
   let currentRate = 1.0;
   let currentVoiceProfile = "natural";
   let selectedVoiceUri = "";
   let progressInterval = null;
+  let currentUtterance = null;
 
-  function togglePlay() {
-    if (!synth) return;
-    if (synth.speaking && !synth.paused) {
-      synth.pause();
-      document.getElementById("play-btn").textContent = "▶";
-    } else if (synth.paused) {
-      synth.resume();
-      document.getElementById("play-btn").textContent = "⏸";
-    } else {
-      speak();
+  // --- 3. Earcons (Feedback Sonoro Accesible) ---
+  function playEarcon(type) {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      const now = ctx.currentTime;
+
+      if (type === "start") {
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08);
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === "stop") {
+        osc.frequency.setValueAtTime(659.25, now);
+        osc.frequency.exponentialRampToValueAtTime(523.25, now + 0.08);
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === "mic-on") {
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.1);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } else if (type === "mic-off") {
+        osc.frequency.setValueAtTime(783.99, now);
+        osc.frequency.exponentialRampToValueAtTime(523.25, now + 0.1);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } else if (type === "command") {
+        osc.frequency.setValueAtTime(1046.50, now);
+        osc.frequency.exponentialRampToValueAtTime(1318.51, now + 0.12);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.start(now);
+        osc.stop(now + 0.12);
+      }
+    } catch (e) {
+      // AudioContext bloqueado o silenciado
     }
   }
 
-  let currentUtterance = null;
+  let serverAudio = null;
 
-  function speak() {
+  function togglePlay() {
+    if (serverAudio) {
+      if (!serverAudio.paused) {
+        serverAudio.pause();
+        const btn = document.getElementById("play-btn");
+        if (btn) btn.textContent = "▶";
+      } else {
+        serverAudio.play();
+        const btn = document.getElementById("play-btn");
+        if (btn) btn.textContent = "⏸";
+      }
+      return;
+    }
+    if (synth && synth.speaking && !synth.paused) {
+      synth.pause();
+      const btn = document.getElementById("play-btn");
+      if (btn) btn.textContent = "▶";
+    } else if (synth && synth.paused) {
+      synth.resume();
+      const btn = document.getElementById("play-btn");
+      if (btn) btn.textContent = "⏸";
+    } else {
+      speak(currentSectionIndex);
+    }
+  }
+
+  function speak(startIndex) {
+    if (serverAudio) {
+      try { serverAudio.pause(); } catch(_) {}
+      serverAudio = null;
+    }
+    if (synth) synth.cancel();
+
+    if (typeof startIndex === "number") {
+      currentSectionIndex = Math.max(0, Math.min(sections.length - 1, startIndex));
+    }
+
+    const currentSec = sections[currentSectionIndex] || { title: "Audio", text: plainTextToSpeak };
+    const textToPlay = currentSec.text || plainTextToSpeak;
+
+    const isEmbeddedInIframe = window.self !== window.top;
+    const hasBrowserVoices = synth && synth.getVoices && synth.getVoices().length > 0;
+
+    // Si estamos en un iframe del IDE o no hay voces del navegador, usamos el motor Server Audio primero:
+    if (isEmbeddedInIframe || !hasBrowserVoices) {
+      playViaServerAudio(textToPlay, currentSec);
+    } else {
+      playViaBrowserSynth(textToPlay, currentSec);
+    }
+  }
+
+  function playViaServerAudio(textToPlay, currentSec) {
+    try {
+      const url = "http://localhost:9000/api/tts?rate=" + currentRate + "&profile=" + encodeURIComponent(currentVoiceProfile) + "&text=" + encodeURIComponent(textToPlay);
+      serverAudio = new Audio(url);
+      serverAudio.volume = currentVolume;
+
+      serverAudio.onplay = () => {
+        playEarcon("start");
+        const btn = document.getElementById("play-btn");
+        if (btn) btn.textContent = "⏸";
+        const sub = document.getElementById("track-subtitle");
+        if (sub) {
+          const secPrefix = sections.length > 1 ? "[" + (currentSectionIndex + 1) + "/" + sections.length + "] " : "";
+          sub.textContent = secPrefix + currentSec.title + " (Voz Neural " + currentRate.toFixed(1) + "x)";
+        }
+        startProgressBar();
+      };
+
+      serverAudio.onended = () => {
+        if (currentSectionIndex < sections.length - 1) {
+          currentSectionIndex++;
+          speak(currentSectionIndex);
+        } else {
+          playEarcon("stop");
+          resetPlay();
+        }
+      };
+
+      serverAudio.onerror = () => {
+        playViaBrowserSynth(textToPlay, currentSec);
+      };
+
+      const p = serverAudio.play();
+      if (p && p.catch) {
+        p.catch(() => {
+          playViaBrowserSynth(textToPlay, currentSec);
+        });
+      }
+    } catch (_) {
+      playViaBrowserSynth(textToPlay, currentSec);
+    }
+  }
+
+  function playViaBrowserSynth(textToPlay, currentSec) {
     if (!synth) return;
-    synth.cancel();
-
     setTimeout(() => {
-      const utter = new SpeechSynthesisUtterance(plainTextToSpeak);
+      const utter = new SpeechSynthesisUtterance(textToPlay);
       currentUtterance = utter;
       utter.lang = "es-MX";
       utter.volume = currentVolume;
@@ -782,13 +1178,25 @@ Configuración del motor de audio original de CrowKit restablecida exitosamente.
       }
 
       utter.onstart = () => {
+        playEarcon("start");
         const btn = document.getElementById("play-btn");
         if (btn) btn.textContent = "⏸";
         const sub = document.getElementById("track-subtitle");
-        if (sub) sub.textContent = "Reproduciendo audio (" + currentRate.toFixed(1) + "x)...";
+        if (sub) {
+          const secPrefix = sections.length > 1 ? "[" + (currentSectionIndex + 1) + "/" + sections.length + "] " : "";
+          sub.textContent = secPrefix + currentSec.title + " (" + currentRate.toFixed(1) + "x)";
+        }
         startProgressBar();
       };
-      utter.onend = () => { resetPlay(); };
+      utter.onend = () => {
+        if (currentSectionIndex < sections.length - 1) {
+          currentSectionIndex++;
+          speak(currentSectionIndex);
+        } else {
+          playEarcon("stop");
+          resetPlay();
+        }
+      };
       utter.onerror = () => { resetPlay(); };
 
       synth.speak(utter);
@@ -796,15 +1204,46 @@ Configuración del motor de audio original de CrowKit restablecida exitosamente.
   }
 
   function restartSpeech() {
-    speak();
+    currentSectionIndex = 0;
+    speak(0);
   }
 
-  function openInTab() {
-    window.open("file:///home/fernando/CrowKit/.agents/skills/accessible-voice-assistant/resources/audio_assistant_panel.html", "_blank");
+  function nextSection() {
+    if (currentSectionIndex < sections.length - 1) {
+      currentSectionIndex++;
+      speak(currentSectionIndex);
+    } else {
+      speak(currentSectionIndex);
+    }
+  }
+
+  function prevSection() {
+    if (currentSectionIndex > 0) {
+      currentSectionIndex--;
+      speak(currentSectionIndex);
+    } else {
+      restartSpeech();
+    }
+  }
+
+  function toggleMute() {
+    if (currentVolume > 0) {
+      previousVolume = currentVolume;
+      setVolume(0);
+    } else {
+      setVolume(previousVolume || 1.0);
+    }
+    const slider = document.getElementById("vol-range");
+    if (slider) slider.value = currentVolume;
   }
 
   function stopSpeech() {
+    if (serverAudio) {
+      try { serverAudio.pause(); } catch(_) {}
+      serverAudio = null;
+    }
     if (synth) synth.cancel();
+    playEarcon("stop");
     resetPlay();
   }
 
@@ -857,6 +1296,9 @@ Configuración del motor de audio original de CrowKit restablecida exitosamente.
 
     if (currentUtterance) {
       currentUtterance.volume = currentVolume;
+    }
+    if (serverAudio) {
+      serverAudio.volume = currentVolume;
     }
   }
 
@@ -1007,6 +1449,354 @@ Configuración del motor de audio original de CrowKit restablecida exitosamente.
   // Restaurar al cargar:
   const savedBtnMode = localStorage.getItem("voice_assistant_btn_mode") || "both";
   changeButtonMode(savedBtnMode);
+
+  // --- 4. Atajos de Teclado Globales Accesibles ---
+  function handleGlobalKeyDown(e) {
+    const isInput = ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName);
+    const key = (e.key || "").toLowerCase();
+    const hasMod = (e.ctrlKey && e.altKey) || (e.altKey && (key === "d" || key === "r" || key === "s" || key === "m"));
+
+    if (!isInput || hasMod) {
+      if (e.code === "Space" && (!isInput || hasMod)) {
+        e.preventDefault();
+        togglePlay();
+      } else if (hasMod && (e.code === "KeyR" || key === "r")) {
+        e.preventDefault();
+        restartSpeech();
+      } else if (hasMod && (e.code === "KeyS" || key === "s")) {
+        e.preventDefault();
+        stopSpeech();
+      } else if (hasMod && e.code === "ArrowRight") {
+        e.preventDefault();
+        nextSection();
+      } else if (hasMod && e.code === "ArrowLeft") {
+        e.preventDefault();
+        prevSection();
+      } else if (hasMod && e.code === "ArrowUp") {
+        e.preventDefault();
+        const newRate = Math.min(2.0, Math.round((currentRate + 0.1) * 10) / 10);
+        const slider = document.getElementById("rate-slider");
+        if (slider) slider.value = newRate.toFixed(1);
+        setRate(newRate);
+      } else if (hasMod && e.code === "ArrowDown") {
+        e.preventDefault();
+        const newRate = Math.max(0.5, Math.round((currentRate - 0.1) * 10) / 10);
+        const slider = document.getElementById("rate-slider");
+        if (slider) slider.value = newRate.toFixed(1);
+        setRate(newRate);
+      } else if (hasMod && (e.code === "KeyM" || key === "m")) {
+        e.preventDefault();
+        toggleMute();
+      } else if ((hasMod && (e.code === "KeyD" || key === "d")) || (e.altKey && key === "d")) {
+        e.preventDefault();
+        toggleDictation();
+      }
+    }
+  }
+
+  window.addEventListener("keydown", handleGlobalKeyDown);
+  document.addEventListener("keydown", handleGlobalKeyDown);
+
+  // --- 5. Reconocimiento de Voz y Comandos Hands-Free ---
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let isListening = false;
+  let recognizedPromptText = "";
+
+  function initSpeechRecognition() {
+    if (!SpeechRecognition) return null;
+    const rec = new SpeechRecognition();
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.lang = "es-MX";
+
+    rec.onstart = () => {
+      if (dictationWatchdog) { clearTimeout(dictationWatchdog); dictationWatchdog = null; }
+      isListening = true;
+      playEarcon("mic-on");
+      updateMicUI(true);
+      const st = document.getElementById("dictation-status");
+      if (st) {
+        st.textContent = "Escuchando...";
+        st.style.color = "#10b981";
+      }
+    };
+
+    rec.onresult = (event) => {
+      let interim = "";
+      let final = "";
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          final += event.results[i][0].transcript;
+        } else {
+          interim += event.results[i][0].transcript;
+        }
+      }
+
+      const spoken = (final || interim).trim();
+      if (!spoken) return;
+
+      const cmdExecuted = handleVoiceCommand(spoken.toLowerCase());
+      const resElem = document.getElementById("dictation-result");
+
+      if (cmdExecuted) {
+        if (resElem) {
+          resElem.innerHTML = "<span class=\"command-tag\">Comando</span> Ejecutado: <em>\"" + spoken + "\"</em>";
+        }
+      } else {
+        if (final) {
+          recognizedPromptText = (recognizedPromptText + " " + final).trim();
+        }
+        if (resElem) {
+          resElem.innerHTML = recognizedPromptText + (interim ? " <span style=\"opacity:0.6;\">" + interim + "</span>" : "");
+        }
+      }
+    };
+
+    rec.onerror = (event) => {
+      if (dictationWatchdog) { clearTimeout(dictationWatchdog); dictationWatchdog = null; }
+      console.warn("Speech recognition error:", event.error);
+      showWebviewRestriction();
+    };
+
+    rec.onend = () => {
+      isListening = false;
+      playEarcon("mic-off");
+      updateMicUI(false);
+      const st = document.getElementById("dictation-status");
+      if (st) {
+        st.textContent = "Micrófono inactivo";
+        st.style.color = "var(--player-subtext)";
+      }
+    };
+
+    return rec;
+  }
+
+  function handleVoiceCommand(text) {
+    if (text.includes("pausa") || text.includes("pausar") || text.includes("detén") || text.includes("detener") || text.includes("para")) {
+      playEarcon("command");
+      if (synth && synth.speaking && !synth.paused) synth.pause();
+      return true;
+    }
+    if (text.includes("continúa") || text.includes("continuar") || text.includes("reanuda") || text.includes("reproducir") || text.includes("reproduce")) {
+      playEarcon("command");
+      togglePlay();
+      return true;
+    }
+    if (text.includes("siguiente") || text.includes("avanza") || text.includes("siguiente sección")) {
+      playEarcon("command");
+      nextSection();
+      return true;
+    }
+    if (text.includes("anterior") || text.includes("regresa") || text.includes("sección anterior")) {
+      playEarcon("command");
+      prevSection();
+      return true;
+    }
+    if (text.includes("reiniciar") || text.includes("desde el inicio") || text.includes("repite")) {
+      playEarcon("command");
+      restartSpeech();
+      return true;
+    }
+    if (text.includes("más rápido") || text.includes("acelera") || text.includes("acelerar")) {
+      playEarcon("command");
+      const newRate = Math.min(2.0, Math.round((currentRate + 0.1) * 10) / 10);
+      const slider = document.getElementById("rate-slider");
+      if (slider) slider.value = newRate.toFixed(1);
+      setRate(newRate);
+      return true;
+    }
+    if (text.includes("más lento") || text.includes("más despacio") || text.includes("desacelera")) {
+      playEarcon("command");
+      const newRate = Math.max(0.5, Math.round((currentRate - 0.1) * 10) / 10);
+      const slider = document.getElementById("rate-slider");
+      if (slider) slider.value = newRate.toFixed(1);
+      setRate(newRate);
+      return true;
+    }
+    if (text.includes("silencio") || text.includes("mute") || text.includes("silenciar")) {
+      playEarcon("command");
+      toggleMute();
+      return true;
+    }
+    return false;
+  }
+
+  let dictationWatchdog = null;
+
+  function showWebviewRestriction() {
+    updateMicUI(false);
+    isListening = false;
+    if (dictationWatchdog) { clearTimeout(dictationWatchdog); dictationWatchdog = null; }
+    const st = document.getElementById("dictation-status");
+    const resElem = document.getElementById("dictation-result");
+    if (st) {
+      st.textContent = "Micrófono restringido por el IDE";
+      st.style.color = "#ef4444";
+    }
+    if (resElem) {
+      resElem.innerHTML = "<div style=\"background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
+        "<span style=\"color:#ef4444; font-weight:bold; font-size:13px;\">⚠️ El marco incrustado del chat restringe el micrófono</span><br>" +
+        "<span style=\"font-size:11px; color:#ffffff; line-height:1.4;\">Para habilitar el micrófono físico de Windows, abre el servidor local seguro en Chrome o Edge.</span>" +
+        "</div>" +
+        "<div style=\"font-size:12px; color:#ffffff; line-height:1.6;\">" +
+        "👉 Haz clic en <a href=\"http://localhost:9000\" target=\"_blank\" style=\"color:#38bdf8; font-weight:bold; text-decoration:underline;\">http://localhost:9000</a> o pulsa el botón <strong>\"🌐 Abrir en Navegador\"</strong> abajo." +
+        "</div>";
+    }
+  }
+
+  const ASSISTANT_URL = "http://localhost:9000/?autoDictate=true";
+
+  function openInBrowser() {
+    try {
+      navigator.clipboard.writeText(ASSISTANT_URL);
+    } catch (_) {}
+    try {
+      window.open(ASSISTANT_URL, "_blank");
+    } catch (e) {
+      console.warn("Could not open in browser:", e);
+    }
+  }
+
+  function toggleDictation() {
+    const isEmbeddedInIframe = window.self !== window.top;
+    const drawer = document.getElementById("dictation-drawer");
+    if (drawer && !drawer.classList.contains("open")) {
+      toggleDrawer("dictation-drawer");
+    }
+
+    if (isEmbeddedInIframe) {
+      // En marcos incrustados del IDE, Chromium bloquea el hardware del micrófono por política de seguridad
+      openInBrowser();
+      const st = document.getElementById("dictation-status");
+      const resElem = document.getElementById("dictation-result");
+      if (st) {
+        st.textContent = "📋 Enlace copiado al portapapeles";
+        st.style.color = "#38bdf8";
+      }
+      if (resElem) {
+        resElem.innerHTML = "<div style=\"background:rgba(56, 189, 248, 0.15); border:1px solid #38bdf8; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
+          "<span style=\"color:#38bdf8; font-weight:bold; font-size:13px;\">🎙️ Dictado con Micrófono de Windows:</span><br>" +
+          "<span style=\"font-size:12px; color:#ffffff; line-height:1.5;\">Por seguridad, el panel de chat de Antigravity IDE no permite capturar el hardware del micrófono. Hemos copiado la URL a tu portapapeles.</span>" +
+          "</div>" +
+          "<div style=\"font-size:12px; color:#ffffff; line-height:1.6;\">" +
+          "👉 Ábrela en tu navegador (Chrome/Edge en Windows):<br>" +
+          "<a href=\"http://localhost:9000/?autoDictate=true\" target=\"_blank\" style=\"color:#facc15; font-weight:bold; font-size:13px; text-decoration:underline;\">http://localhost:9000/?autoDictate=true</a>" +
+          "</div>";
+      }
+      return;
+    }
+
+    // Si ya estamos en el navegador con contexto seguro (localhost:9000):
+    const st = document.getElementById("dictation-status");
+    const resElem = document.getElementById("dictation-result");
+
+    if (!SpeechRecognition) {
+      if (st) { st.textContent = "Voz no disponible en este navegador"; st.style.color = "#ef4444"; }
+      if (resElem) { resElem.innerHTML = "<span style=\"color:#ef4444;\">Web Speech API no está soportada en este navegador. Usa Google Chrome o Microsoft Edge.</span>"; }
+      return;
+    }
+
+    if (!recognition) {
+      try {
+        recognition = initSpeechRecognition();
+      } catch (err) {
+        console.warn("Recognition init error:", err);
+        return;
+      }
+    }
+    if (!recognition) return;
+
+    if (isListening) {
+      recognition.stop();
+    } else {
+      if (st) {
+        st.textContent = "Iniciando micrófono...";
+        st.style.color = "#38bdf8";
+      }
+      try {
+        recognition.start();
+      } catch (e) {
+        console.warn("Recognition start error:", e);
+      }
+    }
+  }
+
+  function copyCliCommand() {
+    const cmd = "python3 scripts/voice_stt.py --record --duration 5";
+    const btn = document.getElementById("copy-cli-btn");
+    navigator.clipboard.writeText(cmd).then(() => {
+      if (btn) {
+        const orig = btn.innerHTML;
+        btn.innerHTML = "✓ ¡Comando Copiado!";
+        setTimeout(() => { btn.innerHTML = orig; }, 1800);
+      }
+    }).catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = cmd;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (btn) {
+        const orig = btn.innerHTML;
+        btn.innerHTML = "✓ ¡Comando Copiado!";
+        setTimeout(() => { btn.innerHTML = orig; }, 1800);
+      }
+    });
+  }
+
+  function updateMicUI(active) {
+    const btn = document.getElementById("mic-btn");
+    const icon = document.getElementById("mic-icon");
+    if (btn) {
+      if (active) {
+        btn.classList.add("active");
+        if (icon) icon.textContent = "🔴";
+      } else {
+        btn.classList.remove("active");
+        if (icon) icon.textContent = "🎙️";
+      }
+    }
+  }
+
+  function copyDictationText() {
+    if (!recognizedPromptText) return;
+    const btn = document.getElementById("copy-dictation-btn");
+    navigator.clipboard.writeText(recognizedPromptText).then(() => {
+      if (btn) {
+        const orig = btn.innerHTML;
+        btn.textContent = "✓ ¡Copiado!";
+        setTimeout(() => { btn.innerHTML = orig; }, 1800);
+      }
+    }).catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = recognizedPromptText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (btn) {
+        const orig = btn.innerHTML;
+        btn.textContent = "✓ ¡Copiado!";
+        setTimeout(() => { btn.innerHTML = orig; }, 1800);
+      }
+    });
+  }
+
+  // Auto-iniciar dictado si se abrió con ?autoDictate=true en navegador
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("autoDictate") === "true") {
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          toggleDictation();
+        }, 500);
+      });
+    }
+  } catch (_) {}
 
 </script>
 </body>

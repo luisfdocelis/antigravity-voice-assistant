@@ -192,7 +192,8 @@ echo ""
 # ── Ejemplos en examples/ ────────────────────────────────────────────────────
 EXAMPLES_COUNT=$(find "$SKILLS_DIR" -name "*.cpp" -o -name "*.hpp" | wc -l)
 EXAMPLES_BYTES=$(find "$SKILLS_DIR" \( -name "*.cpp" -o -name "*.hpp" \) \
-  -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}' || echo 0)
+  -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}')
+EXAMPLES_BYTES="${EXAMPLES_BYTES:-0}"
 echo -e "${BOLD}📁 Archivos en examples/ (lazy, no cuestan tokens automáticamente)${NC}"
 printf "  ${GREEN}%-52s ✅ %6d bytes  (%.0f archivos)${NC}\n" \
   "skills/*/examples/*" "$EXAMPLES_BYTES" "$EXAMPLES_COUNT"
