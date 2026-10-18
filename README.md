@@ -13,6 +13,10 @@ Provides an elegant, compact media-player-style voice assistant with multilingua
 
 ## ✨ Features
 
+- ⚙️ **Triple Speech Engine Architecture (User Selectable)**:
+  1. **Web Speech API**: Zero-configuration native speech engine via browser/Electron on Linux, macOS, and Windows.
+  2. **Local CLI Engine**: Cross-platform script ([`scripts/voice_tts.py`](file:///home/fernando/antigravity-voice-assistant/scripts/voice_tts.py)) running local neural models like Piper TTS/eSpeak-ng (Linux), `say` (macOS), or SAPI (Windows).
+  3. **Cloud Neural Engine**: Ultra-realistic voices using OpenAI TTS (`tts-1`) or ElevenLabs by providing an optional API key in Settings.
 - 🌐 **Multilingual Speech Synthesis & Auto-Detection**: Automatically detects the response language or allows choosing English (US/UK), Spanish (MX/ES), French, German, Portuguese, Italian, or Japanese.
 - 🎙️ **Structured Audio Cadence**: Speaks headings, bullets, numbered steps, and markdown links with natural pacing and language-appropriate cues.
 - 🎛️ **Compact Media Player**: Modern transport controls (`⏮` Restart, `▶`/`⏸` Play/Pause, `⏹` Stop, `⏻` Power).
@@ -37,6 +41,16 @@ git clone https://github.com/luisfdocelis/antigravity-voice-assistant.git ~/.gem
 ```
 
 Antigravity will automatically detect the plugin across all your workspaces and projects.
+
+---
+
+## 📚 Documentation
+
+For complete technical and user documentation, see:
+
+- 📖 [**User & Usage Guide**](docs/USER_GUIDE.md): Installation, media player controls, accessibility options, and split-tab setup.
+- 🏗️ [**Architecture & Design**](docs/ARCHITECTURE.md): Multi-engine overview, cadence formatting rules, and component breakdown.
+- 💻 [**CLI & Developer Reference**](docs/CLI_REFERENCE.md): Standalone CLI bridge usage, supported OS engines, and widget extension tips.
 
 ---
 

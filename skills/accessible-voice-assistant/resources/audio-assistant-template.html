@@ -366,7 +366,7 @@
   
   .settings-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
   }
   .setting-item label {
@@ -453,7 +453,7 @@
       <div class="meta-group">
         <div class="avatar" id="avatar-icon">🦅</div>
         <div class="info">
-          <span class="info-title">CrowKit Assistant</span>
+          <span class="info-title">Antigravity Voice</span>
           <span class="info-subtitle" id="track-subtitle">Listo para leer respuesta</span>
         </div>
       </div>
@@ -576,6 +576,16 @@
         </div>
       </div>
 
+      
+      <!-- Modo de Botones -->
+      <div class="setting-item">
+        <label>🔘 Botones</label>
+        <select id="btn-mode-select" onchange="changeButtonMode(this.value)">
+          <option value="both" selected>Iconos + Texto</option>
+          <option value="icons">Solo Iconos</option>
+        </select>
+      </div>
+
       <!-- 6. Perfiles de Voz con Tonos Notables -->
       <div class="setting-item">
         <label>🎙️ Tipo de Voz</label>
@@ -588,7 +598,7 @@
       </div>
 
       <!-- 7. Voces del Sistema -->
-      <div class="setting-item" id="sys-voice-item" style="display:none; grid-column: 1 / -1;">
+      <div class="setting-item" id="sys-voice-item" style="display:none; grid-column: span 2;">
         <label>🗣️ Voz del Sistema</label>
         <select id="voice-select" onchange="setSystemVoice(this.value)"></select>
       </div>
@@ -597,23 +607,23 @@
 </div>
 
 <div id="raw-text-source" style="display:none;">
-### Asistente de Voz y Texto Accesible
+## 🎙️ Asistente de Voz Accesible
 
-Aquí tienes las respuestas y opciones organizadas:
-
----
-
-## 📋 Resumen de Soluciones
-1. **Recuadro de Texto Restaurado**: El contenido de texto vuelve a mostrarse completamente renderizado con formato enriquecido.
-2. **Control de Volumen con Botón**: Pulsa el icono `🔊` para abrir o cerrar la barra deslizante de volumen.
-3. **Reproducción por Voz**: Pulsa el botón `▶` para escuchar el mensaje completo con cadencia adaptada en español.
+Configuración del motor de audio original de CrowKit restablecida exitosamente.
 
 ---
 
-## 🎛️ Ajustes Personalizables
-- **Desplegar Texto**: Pulsa el botón `📄 Texto` en la parte superior para mostrar u ocultar este recuadro.
-- **Ajustes de Interfaz**: Pulsa `⚙️ Ajustes` para cambiar temas, tamaño de letra, velocidad y tipo de voz.
-- **Modo Pestaña**: Puedes abrirlo en una ventana lateral usando el botón `🗗 Pestaña`.
+## 🎛️ Distribución en 3 Componentes por Fila
+1. **Fila 1**: `🎨 Tema Visual` · `⚡ Velocidad` · `📐 Ancho Widget`
+2. **Fila 2**: `🔍 Letra Texto` · `💧 Opacidad Fondo` · `🔘 Botones`
+3. **Fila 3**: `🎙️ Tipo de Voz` · `🗣️ Voz del Sistema`
+
+---
+
+## 🔊 Motor de Audio Original (CrowKit)
+- Síntesis de voz limpia mediante Web Speech API nativa.
+- Selección de timbre (Natural, Grave, Clara, Pausada) y sincronización con barra de progreso.
+
 </div>
 
 <script>
@@ -982,6 +992,22 @@ Aquí tienes las respuestas y opciones organizadas:
     }
   }
   setButtonMode("icons");
+
+  function changeButtonMode(mode) {
+    if (mode === "icons") {
+      document.body.classList.add("mode-icons");
+    } else {
+      document.body.classList.remove("mode-icons");
+    }
+    localStorage.setItem("voice_assistant_btn_mode", mode);
+    const sel = document.getElementById("btn-mode-select");
+    if (sel) sel.value = mode;
+  }
+
+  // Restaurar al cargar:
+  const savedBtnMode = localStorage.getItem("voice_assistant_btn_mode") || "both";
+  changeButtonMode(savedBtnMode);
+
 </script>
 </body>
 </html>

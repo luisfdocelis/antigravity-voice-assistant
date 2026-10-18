@@ -1,33 +1,33 @@
 ---
 name: "accessible-voice-assistant"
-description: "Accessible voice assistant with multilingual speech synthesis (English/Spanish/auto-detect), pure white text (#ffffff), and large print for low-vision users in dark themes."
+description: "Asistencia de voz en español, texto blanco (#ffffff) y letra grande para baja visión en tema oscuro."
 ---
 
 # Accessible Voice Assistant Skill — CrowKit 🦅
 
-This skill provides accessible audio assistance with multilingual Text-to-Speech (via Web Speech API supporting auto-detection, English, Spanish, French, German, and Portuguese), volume controls (`0%` to `100%`), voice pitch/timbre profiles (`Natural`, `Deep / Low`, `Clear / High`, `Calm / Warm` + native system voices), dynamic font sizing (`16px` to `42px`), and high-contrast visual styling (pure white text `#ffffff` over dark surfaces `#0b1120`) for low-vision and dark theme users.
+Esta Skill proporciona asistencia de audio en español (Text-to-Speech mediante Web Speech API), barra y botones de volumen (`0%` a `100%`), selector de tipos y timbres de voz (`Natural`, `Grave / Profunda`, `Clara / Aguda`, `Pausada y Cálida` + voces nativas del sistema), controles dinámicos de tamaño de fuente (`🔍 A-` / `🔍 A+` de `16px` a `42px`) y formato visual de alto contraste (texto blanco puro `#ffffff` sobre superficies oscuras `#0b1120`) para usuarios con baja visión en tema oscuro.
 
 ---
 
-## 📌 Accessible Formatting Rules for Chat
+## 📌 Reglas de Formato Accesible en el Chat
 
-1. **Large & Hierarchical Typography:**
-   - Use `##` headings for main concepts and decision options so that chat renderers display larger and bolder fonts.
-   - Avoid long continuous text blocks or multi-column tables; prefer short, direct numbered lists.
-2. **High-Contrast Dark Theme:**
-   - In all HTML artifacts or inline widgets (`<agent-embed>`), use **pure white text (`#ffffff`)** over a dark background (`#0b1120` / `#111827`) with cyan borders (`#38bdf8`) and yellow focus rings (`#facc15`).
-   - Keep a default base font size of **`24px`** (or adjustable between `16px` and `42px`).
+1. **Tipografía Grande y Jerárquica:**
+   - Utilizar encabezados `##` para las ideas principales y opciones de decisión, de modo que el cliente de chat renderice una fuente de mayor tamaño y grosor.
+   - Evitar bloques largos de texto continuo o tablas con muchas columnas; preferir listas numeradas cortas y directas.
+2. **Alto Contraste en Tema Oscuro:**
+   - En todos los artefactos HTML o widgets inline (`<agent-embed>`), utilizar **texto blanco puro (`#ffffff`)** sobre fondo oscuro (`#0b1120` / `#111827`) con bordes cian (`#38bdf8`) y anillos de foco amarillos (`#facc15`).
+   - Mantener tamaños de fuente base de **`24px`** y permitir ajuste interactivo entre `16px` y `42px`.
 
 ---
 
-## 🔊 Workflow for Inserting the Voice Player into Chat
+## 🔊 Flujo para Insertar el Reproductor de Voz en el Chat
 
-1. **Copy and Update Base Template:**
-   Use [resources/audio-assistant-template.html](resources/audio-assistant-template.html) as the base reference and save it to the conversation artifact directory (`<appDataDir>/brain/<conversation-id>/audio_assistant.html`) with `UserFacing: true`.
-2. **Customize Speech & Reading Content (`#raw-text-source`):**
-   Update the contents of `<div id="raw-text-source" style="display:none;">` with the Markdown summary of the current response in the user's language (English, Spanish, or auto-detected). The widget renders this formatted text in pure white in the expandable text drawer.
-3. **Embed the Widget in the Response:**
-   Include the `<agent-embed>` tag at the very start of the chat response:
+1. **Copiar y Actualizar la Plantilla Base:**
+   Tomar como referencia el archivo [resources/audio-assistant-template.html](resources/audio-assistant-template.html) y guardarlo en el directorio de artefactos de la conversación (`<appDataDir>/brain/<conversation-id>/audio_assistant.html`) con `UserFacing: true`.
+2. **Personalizar el Guion de Voz y Lectura (`mainSummary`):**
+   Actualizar la constante `mainSummary` dentro del `<script>` con el resumen hablado y visual de la respuesta actual en español (`es-MX` / `es`). El widget muestra ese mismo texto en blanco puro dentro de su recuadro de lectura escalable.
+3. **Incrustar el Widget en la Respuesta:**
+   Incluir la etiqueta `<agent-embed>` al inicio de la respuesta del chat:
 
 ```html
 <agent-embed src="file:///<artifact_path>/audio_assistant.html"></agent-embed>
@@ -35,16 +35,15 @@ This skill provides accessible audio assistance with multilingual Text-to-Speech
 
 ---
 
-## ⌨️ Accessible Controls Included in the Template
+## ⌨️ Controles Accesibles Incluidos en la Plantilla
 
-- **▶️ Listen / ⏸️ Pause / ⏹️ Stop:** Compact top bar with primary speech controls.
-- **🌐 Multilingual Support & Auto-detect (`#lang-select`):** Select between Auto-detect, English (US/UK), Spanish (MX/ES), French, German, Portuguese, Italian, or Japanese. Automatically filters native system voices to match the selected language.
-- **📄 Collapsible Text (`#text-drawer`):** Toggle button (`📄 Text ▾`) showing or hiding the formatted response text with a 1-click Markdown copy button (`📋`).
-- **⚙️ Collapsible Settings (`#settings-drawer`):** Clean and accessible drawer with:
-  - **🎨 High-Contrast Themes (`#theme-select`):** 16 themes (11 DaisyUI dark/vibrant palettes + 5 developer favorites: Nord, Tokyo Night, Monokai, Solarized Dark, Black OLED).
-  - **🔘 Button Mode:** Supports icons-only or icons + text labels.
-  - **📐 Widget Scale (`#scale-slider`, `50%` to `100%`):** Slider to resize the overall widget.
-  - **🔍 Font Size (`14px` to `36px`):** Real-time text font adjustment.
-  - **💧 Background Opacity (`25%` to `100%`):** Adjust container transparency while keeping text 100% crisp.
-  - **🔊 Volume Slider:** Button toggle with 0% to 100% slider.
-  - **⚡ Speed & Voice Profiles:** Speed from `0.5x` to `2.0x`, 4 tonal profiles, and system voice selection.
+- **▶️ Escuchar / ⏯️ Pausar / ⏹️ Detener:** Barra superior compacta con los controles principales de locución.
+- **📄 Texto Colapsable (`#btn-text` / `#summary-display`):** Botón desplegable (`📄 Texto ▾`) que muestra u oculta el recuadro de texto del resumen (colapsado por defecto para ahorrar espacio, persistido en `localStorage`).
+- **⚙️ Ajustes Colapsables (`#btn-settings` / `#settings-drawer`):** Botón desplegable (`⚙️ Ajustes ▾`) que mantiene la interfaz limpia y compacta, abriendo o cerrando bajo demanda el panel con:
+  - **🎨 Tema DaisyUI (`#theme-select`):** Selector con 9 paletas oficiales de DaisyUI adaptadas a alto contraste (`night`, `dracula`, `synthwave`, `luxury`, `forest`, `aqua`, `cyberpunk`, `coffee`, `emerald`), persistido en `localStorage`.
+  - **🔘 Botones (`#btn-mode-select`):** Permite elegir entre `Iconos + Texto`, `Solo Iconos` o `Solo Texto` en los botones del reproductor (persistido en `localStorage`).
+  - **📐 Tamaño Widget (`#scale-slider`, `75%` a `150%`):** Barra deslizante y botones (`➖` / `➕`) que redimensionan proporcionalmente todo el widget del asistente entre `75%` y `150%` (persistido en `localStorage`).
+  - **💧 Opacidad / Transparencia (`#opacity-slider`, `25%` a `100%`):** Barra deslizante y botones (`➖` / `➕`) que ajustan la opacidad del fondo del widget manteniendo el texto 100% nítido (persistido en `localStorage`).
+  - **🔍 Letra (`A-` / `A+`):** Ajusta en tiempo real el tamaño de la fuente (`16px` a `42px`, persistido en `localStorage`).
+  - **🔊 Volumen (`🔉 -`, barra deslizante y `🔊 +`):** Ajusta el volumen de `0%` a `100%` en pasos de `10%` o continuo.
+  - **⚡ Velocidad y 🎙️ Tipo de Voz:** Selector de velocidad (`0.75x` a `1.4x`), 4 perfiles de timbre (`Natural`, `Voz Grave / Profunda`, `Voz Clara / Aguda`, `Pausada y Cálida`) y selector de voces del sistema.

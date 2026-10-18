@@ -20,8 +20,20 @@ import argparse
 import shutil
 import json
 
-def speak_native_cli(text: str, voice: str = None, rate: float = 1.0):
+def speak_native_cli(text: str, voice: str = None, rate: float = 1.0, output_file: str = None):
     system = platform.system().lower()
+
+    if output_file:
+        if shutil.which("espeak-ng"):
+            speed_val = int(175 * rate)
+            subprocess.run(["espeak-ng", "-s", str(speed_val), "-w", output_file, text])
+            print(f"[OK] Audio guardado exitosamente en: {output_file}")
+            return
+        elif shutil.which("espeak"):
+            speed_val = int(175 * rate)
+            subprocess.run(["espeak", "-s", str(speed_val), "-w", output_file, text])
+            print(f"[OK] Audio guardado exitosamente en: {output_file}")
+            return
 
     if "darwin" in system:  # macOS
         cmd = ["say"]
@@ -46,7 +58,12 @@ def speak_native_cli(text: str, voice: str = None, rate: float = 1.0):
         subprocess.run(["powershell", "-NoProfile", "-Command", ps_script])
 
     else:  # Linux / Unix
-        # Check available engines in order of quality
+        # Configure runtime directory for speech-dispatcher if not present
+        if not os.environ.get("XDG_RUNTIME_DIR"):
+            tmp_runtime = f"/tmp/runtime-{os.getuid()}"
+            os.makedirs(tmp_runtime, mode=0o700, exist_ok=True)
+            os.environ["XDG_RUNTIME_DIR"] = tmp_runtime
+
         if shutil.which("piper"):
             piper_cmd = f"echo {json.dumps(text)} | piper --output-raw | aplay -r 22050 -f S16_LE -t raw -"
             subprocess.run(piper_cmd, shell=True)
@@ -69,6 +86,7 @@ def main():
     parser.add_argument("--engine", choices=["native", "cloud", "web"], default="native", help="TTS Engine mode")
     parser.add_argument("--voice", default="", help="Voice name or ID")
     parser.add_argument("--rate", type=float, default=1.0, help="Speech rate multiplier (e.g. 1.0)")
+    parser.add_argument("-o", "--output", default=None, help="Save generated speech to WAV audio file")
     args = parser.parse_args()
 
     text = args.text
@@ -79,7 +97,7 @@ def main():
         print("Please provide text to speak via argument or stdin.")
         sys.exit(1)
 
-    speak_native_cli(text, voice=args.voice, rate=args.rate)
+    speak_native_cli(text, voice=args.voice, rate=args.rate, output_file=args.output)
 
 if __name__ == "__main__":
     main()
