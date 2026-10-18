@@ -751,8 +751,8 @@
     <!-- Barra de acciones rápidas para navegador y terminal -->
     <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; align-items:center; justify-content:space-between;">
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <a href="http://localhost:54321/?autoDictate=true" target="_blank" class="browser-btn" id="open-browser-btn" style="text-decoration:none;" title="Abrir asistente en tu navegador con permisos completos de micrófono">
-          🎙️ Hablar en Navegador (localhost:54321)
+        <a href="http://localhost:9000/?autoDictate=true" target="_blank" class="browser-btn" id="open-browser-btn" style="text-decoration:none;" title="Abrir asistente en tu navegador con permisos completos de micrófono">
+          🎙️ Hablar en Navegador (localhost:9000)
         </a>
         <button class="icon-copy-btn" id="copy-cli-btn" onclick="copyCliCommand()" title="Copiar comando para dictar desde terminal">
           💻 Copiar CLI
@@ -787,7 +787,7 @@ Hemos conectado el botón de micrófono del chat para abrir automáticamente la 
 ---
 
 ## ⚡ Flujo de Dictado en 1 Clic
-1. **Pulsar el micrófono**: Al pulsar `🎙️ Dictar` (o `Ctrl + Alt + D`) en el chat, se abrirá de inmediato tu navegador en `http://localhost:54321/?autoDictate=true`.
+1. **Pulsar el micrófono**: Al pulsar `🎙️ Dictar` (o `Ctrl + Alt + D`) en el chat, se abrirá de inmediato tu navegador en `http://localhost:9000/?autoDictate=true`.
 2. **Habla al instante**: Tu navegador (Chrome o Edge en Windows) iniciará la escucha automáticamente. Habla con naturalidad y verás la transcripción en vivo.
 3. **Copiar Prompt**: Pulsa el botón `Copiar Prompt` para pegar tu instrucción en el chat.
 4. **Comandos de 1 Clic en el Chat**: Si solo deseas pausar, reanudar o cambiar velocidad, pulsa los nuevos botones de comando rápido directamente en la tarjeta sin necesidad de hablar.
@@ -1556,12 +1556,12 @@ Hemos conectado el botón de micrófono del chat para abrir automáticamente la 
         "<span style=\"font-size:11px; color:#ffffff; line-height:1.4;\">Para habilitar el micrófono físico de Windows, abre el servidor local seguro en Chrome o Edge.</span>" +
         "</div>" +
         "<div style=\"font-size:12px; color:#ffffff; line-height:1.6;\">" +
-        "👉 Haz clic en <a href=\"http://localhost:54321\" target=\"_blank\" style=\"color:#38bdf8; font-weight:bold; text-decoration:underline;\">http://localhost:54321</a> o pulsa el botón <strong>\"🌐 Abrir en Navegador\"</strong> abajo." +
+        "👉 Haz clic en <a href=\"http://localhost:9000\" target=\"_blank\" style=\"color:#38bdf8; font-weight:bold; text-decoration:underline;\">http://localhost:9000</a> o pulsa el botón <strong>\"🌐 Abrir en Navegador\"</strong> abajo." +
         "</div>";
     }
   }
 
-  const ASSISTANT_URL = "http://localhost:54321/?autoDictate=true";
+  const ASSISTANT_URL = "http://localhost:9000/?autoDictate=true";
 
   function openInBrowser() {
     try {
@@ -1594,13 +1594,13 @@ Hemos conectado el botón de micrófono del chat para abrir automáticamente la 
           "<span style=\"font-size:11px; color:#ffffff; line-height:1.4;\">Por seguridad, el panel de chat del IDE no permite capturar el micrófono. Habla en la pestaña abierta en Chrome o Edge para dictar con tu micrófono de Windows.</span>" +
           "</div>" +
           "<div style=\"font-size:12px; color:#ffffff;\">" +
-          "👉 Si la ventana no se abrió automáticamente: <a href=\"http://localhost:54321/?autoDictate=true\" target=\"_blank\" style=\"color:#38bdf8; font-weight:bold; text-decoration:underline;\">Haz clic aquí para abrir</a>." +
+          "👉 Si la ventana no se abrió automáticamente: <a href=\"http://localhost:9000/?autoDictate=true\" target=\"_blank\" style=\"color:#38bdf8; font-weight:bold; text-decoration:underline;\">Haz clic aquí para abrir</a>." +
           "</div>";
       }
       return;
     }
 
-    // Si ya estamos en el navegador con contexto seguro (localhost:54321):
+    // Si ya estamos en el navegador con contexto seguro (localhost:9000):
     const st = document.getElementById("dictation-status");
     const resElem = document.getElementById("dictation-result");
 

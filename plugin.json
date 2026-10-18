@@ -10,6 +10,6 @@
     "Open voice assistant in an editor tab",
     "Change visual theme and speech speed",
     "Export documentation to audio podcast",
-    "Start local voice server on localhost:54321"
+    "Start local voice server on localhost:9000"
   ]
 }

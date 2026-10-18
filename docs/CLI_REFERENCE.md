@@ -130,7 +130,7 @@ python3 scripts/setup_piper.py --install es_MX
 
 ## 🌐 Local Speech Web Server ([`scripts/voice_server.py`](file:///home/fernando/antigravity-voice-assistant/scripts/voice_server.py))
 
-Starts the lightweight background server providing a secure origin (`http://localhost:54321`) for Web Speech API in Chrome, Edge, and Brave:
+Starts the lightweight background server providing a secure origin (`http://localhost:9000`) for Web Speech API in Chrome, Edge, and Brave:
 
 ```bash
 # Start server manually:

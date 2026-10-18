@@ -92,7 +92,7 @@ flowchart LR
 - [x] **Servidor MCP de Voz (Model Context Protocol)**:
   - Servidor JSON-RPC estándar [`scripts/mcp_voice_server.py`](file:///home/fernando/antigravity-voice-assistant/scripts/mcp_voice_server.py) exponiendo herramientas `speak_text`, `narrate_error`, `export_podcast` y `get_status` para agentes externos en Antigravity.
 - [x] **Servidor Web Seguro Local**:
-  - Servidor background [`scripts/voice_server.py`](file:///home/fernando/antigravity-voice-assistant/scripts/voice_server.py) en `http://localhost:54321` para habilitar Web Speech API con contexto seguro en Chromium y navegadores modernos.
+  - Servidor background [`scripts/voice_server.py`](file:///home/fernando/antigravity-voice-assistant/scripts/voice_server.py) en `http://localhost:9000` para habilitar Web Speech API con contexto seguro en Chromium y navegadores modernos.
 - [ ] **Diferenciación de Voces Multi-Agente**:
   - Asignación de timbres o personalidades de voz distintas para agentes especializados (ej. voz sobria para el auditor de seguridad, voz enérgica para el optimizador).
 - [ ] **Widget Permanente en Barra de Estado (Status Bar Pill)**:

@@ -2,7 +2,7 @@
 """
 voice_server.py — Servidor local para Antigravity Voice Assistant
 
-Permite servir el asistente en http://localhost:54321 (origen seguro para Web Speech API en Chrome/Edge).
+Permite servir el asistente en http://localhost:9000 (origen seguro para Web Speech API en Chrome/Edge).
 """
 
 import http.server
@@ -12,7 +12,7 @@ import sys
 import json
 from pathlib import Path
 
-PORT = 54321
+PORT = 9000
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 class VoiceRequestHandler(http.server.SimpleHTTPRequestHandler):

@@ -51,7 +51,7 @@ TOOLS = [
     },
     {
         "name": "get_status",
-        "description": "Reporta el estado del asistente de voz, el servidor local de localhost:54321 y los motores TTS disponibles.",
+        "description": "Reporta el estado del asistente de voz, el servidor local de localhost:9000 y los motores TTS disponibles.",
         "inputSchema": {
             "type": "object",
             "properties": {}
@@ -94,7 +94,7 @@ def handle_get_status(_):
             "espeak_ng": espeak,
             "speech_dispatcher": spdsay
         },
-        "server_url": "http://localhost:54321"
+        "server_url": "http://localhost:9000"
     }
 
 def process_request(req):
