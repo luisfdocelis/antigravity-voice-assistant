@@ -19,11 +19,26 @@ import subprocess
 import argparse
 import shutil
 import json
+from pathlib import Path
 
 def speak_native_cli(text: str, voice: str = None, rate: float = 1.0, output_file: str = None):
     system = platform.system().lower()
 
+    models_dir = Path(__file__).resolve().parent.parent / "models" / "piper"
+    local_model = None
+    if models_dir.exists():
+        onnx_files = list(models_dir.glob("*.onnx"))
+        if onnx_files:
+            local_model = str(onnx_files[0])
+
     if output_file:
+        if shutil.which("piper"):
+            model_flag = f"--model {local_model}" if local_model else ""
+            piper_cmd = f"echo {json.dumps(text)} | piper {model_flag} --output_file {output_file}"
+            res = subprocess.run(piper_cmd, shell=True)
+            if res.returncode == 0:
+                print(f"[OK] Audio generado con Piper TTS en: {output_file}")
+                return
         if shutil.which("espeak-ng"):
             speed_val = int(175 * rate)
             subprocess.run(["espeak-ng", "-s", str(speed_val), "-w", output_file, text])

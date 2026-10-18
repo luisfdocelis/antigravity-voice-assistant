@@ -97,6 +97,59 @@ python3 scripts/voice_notify.py --git-diff
 
 ---
 
+## 🎧 Podcast Mode & Audio Exporter ([`scripts/voice_podcast.py`](file:///home/fernando/antigravity-voice-assistant/scripts/voice_podcast.py))
+
+Converts Markdown documentation, technical guides, or architecture summaries into structured multi-chapter audio files:
+
+```bash
+# List chapters and estimated listening duration:
+python3 scripts/voice_podcast.py --list-chapters docs/ROADMAP.md
+
+# Render complete audio podcast to a WAV file:
+python3 scripts/voice_podcast.py docs/USER_GUIDE.md -o user_guide_podcast.wav --rate 1.1
+```
+
+---
+
+## 🧠 Zero-Config Piper Neural TTS ([`scripts/setup_piper.py`](file:///home/fernando/antigravity-voice-assistant/scripts/setup_piper.py))
+
+Downloads and configures high-quality, lightweight Piper neural TTS voice models offline without paying for cloud APIs:
+
+```bash
+# List available and installed models:
+python3 scripts/setup_piper.py --list
+
+# Download Spanish neural voice (es_ES-davefx-medium):
+python3 scripts/setup_piper.py --install es_ES
+
+# Download Mexican Spanish neural voice (es_MX-ald-medium):
+python3 scripts/setup_piper.py --install es_MX
+```
+
+---
+
+## 🌐 Local Speech Web Server ([`scripts/voice_server.py`](file:///home/fernando/antigravity-voice-assistant/scripts/voice_server.py))
+
+Starts the lightweight background server providing a secure origin (`http://localhost:54321`) for Web Speech API in Chrome, Edge, and Brave:
+
+```bash
+# Start server manually:
+python3 scripts/voice_server.py
+```
+
+---
+
+## 🤖 MCP Voice Server ([`scripts/mcp_voice_server.py`](file:///home/fernando/antigravity-voice-assistant/scripts/mcp_voice_server.py))
+
+Exposes a JSON-RPC 2.0 stdio server conforming to Model Context Protocol (MCP) to let external agents invoke audio tools:
+
+```bash
+# Test MCP tool listing:
+echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}' | python3 scripts/mcp_voice_server.py
+```
+
+---
+
 ## 🛠️ Modifying the UI Template
 
 The HTML widget lives at [`skills/accessible-voice-assistant/resources/audio-assistant-template.html`](file:///home/fernando/antigravity-voice-assistant/skills/accessible-voice-assistant/resources/audio-assistant-template.html).

@@ -64,8 +64,8 @@ flowchart LR
     - *"Más rápido"* / *"Más lento"* -> Ajusta la velocidad dinámicamente.
     - *"Silencio"* -> Silencia o restaura el volumen.
   - Feedback acústico con "Earcons" especializados para activación de micrófono y confirmación de comando.
-- [ ] **Empaquetado Zero-Config de Piper TTS Local**:
-  - Script automático para descargar modelos neuronales compactos de Piper TTS en español e inglés sin requerir configuración manual ni claves de API de pago.
+- [x] **Empaquetado Zero-Config de Piper TTS Local**:
+  - Script gestor [`scripts/setup_piper.py`](file:///home/fernando/antigravity-voice-assistant/scripts/setup_piper.py) para descargar y configurar modelos neuronales compactos de Piper TTS en español e inglés sin requerir configuración manual ni claves de API de pago.
 - [ ] **Detección Opcional de Palabra de Activación (Wake-Word)**:
   - Activación por voz con palabras clave (*"Oye Asistente"* o *"Hey Antigravity"*).
 
@@ -84,15 +84,17 @@ flowchart LR
 
 ---
 
-### 🌐 Fase 4: v3.0 — Ecosistema, Exportación y Multi-Agente
+### 🌐 Fase 4: v3.0 — Ecosistema, Exportación y Multi-Agente (En progreso / v3.0 ✔)
 *Fidelidad acústica y colaboración avanzada con el ecosistema Antigravity.*
 
-- [ ] **Exportación de Audio / "Modo Podcast"**:
-  - Generación y descarga de archivos `.mp3` o `.wav` a partir de explicaciones técnicas largas o planes arquitectónicos, permitiendo escuchar explicaciones mientras se descansa la vista.
+- [x] **Exportación de Audio / "Modo Podcast"**:
+  - Herramienta [`scripts/voice_podcast.py`](file:///home/fernando/antigravity-voice-assistant/scripts/voice_podcast.py) para generar y descargar archivos de audio estructurados por capítulos a partir de explicaciones técnicas largas o documentos Markdown.
+- [x] **Servidor MCP de Voz (Model Context Protocol)**:
+  - Servidor JSON-RPC estándar [`scripts/mcp_voice_server.py`](file:///home/fernando/antigravity-voice-assistant/scripts/mcp_voice_server.py) exponiendo herramientas `speak_text`, `narrate_error`, `export_podcast` y `get_status` para agentes externos en Antigravity.
+- [x] **Servidor Web Seguro Local**:
+  - Servidor background [`scripts/voice_server.py`](file:///home/fernando/antigravity-voice-assistant/scripts/voice_server.py) en `http://localhost:54321` para habilitar Web Speech API con contexto seguro en Chromium y navegadores modernos.
 - [ ] **Diferenciación de Voces Multi-Agente**:
   - Asignación de timbres o personalidades de voz distintas para agentes especializados (ej. voz sobria para el auditor de seguridad, voz enérgica para el optimizador).
-- [ ] **Servidor MCP de Voz (Model Context Protocol)**:
-  - Exposición de herramientas estándar de audio para que cualquier agente externo en Antigravity pueda solicitar locución o verificar el estado del asistente.
 - [ ] **Widget Permanente en Barra de Estado (Status Bar Pill)**:
   - Mini-control en la barra de estado de Antigravity para pausar/reanudar y ver el progreso sin ocupar espacio en el editor.
 
