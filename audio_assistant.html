@@ -729,9 +729,9 @@
     <!-- Barra de acciones rápidas para navegador y terminal -->
     <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; align-items:center; justify-content:space-between;">
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button class="browser-btn" id="open-browser-btn" onclick="openInBrowser()" title="Abrir asistente en tu navegador con permisos completos de micrófono">
+        <a href="file:///home/fernando/antigravity-voice-assistant/audio_assistant.html" target="_blank" class="browser-btn" id="open-browser-btn" style="text-decoration:none;" title="Abrir asistente en tu navegador con permisos completos de micrófono">
           🌐 Abrir en Navegador
-        </button>
+        </a>
         <button class="icon-copy-btn" id="copy-cli-btn" onclick="copyCliCommand()" title="Copiar comando para dictar desde terminal">
           💻 Copiar Comando CLI
         </button>
@@ -1397,6 +1397,7 @@ Hemos identificado y solucionado el comportamiento de `Ctrl + Alt + D` y los per
     rec.lang = "es-MX";
 
     rec.onstart = () => {
+      if (dictationWatchdog) { clearTimeout(dictationWatchdog); dictationWatchdog = null; }
       isListening = true;
       playEarcon("mic-on");
       updateMicUI(true);
@@ -1440,30 +1441,9 @@ Hemos identificado y solucionado el comportamiento de `Ctrl + Alt + D` y los per
     };
 
     rec.onerror = (event) => {
+      if (dictationWatchdog) { clearTimeout(dictationWatchdog); dictationWatchdog = null; }
       console.warn("Speech recognition error:", event.error);
-      const st = document.getElementById("dictation-status");
-      const resElem = document.getElementById("dictation-result");
-      if (st) {
-        st.textContent = "Error: " + event.error;
-        st.style.color = "#ef4444";
-      }
-      if (resElem) {
-        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-          resElem.innerHTML = "<div style=\"background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:6px; padding:8px 10px; margin-bottom:8px;\">" +
-            "<span style=\"color:#ef4444; font-weight:bold; font-size:12px;\">⚠️ Micrófono no permitido en el marco incrustado del IDE</span><br>" +
-            "<span style=\"font-size:11px; color:#ffffff;\">Por seguridad, Electron bloquea el micrófono en webviews de chat.</span>" +
-            "</div>" +
-            "<div style=\"font-size:12px; color:#ffffff; line-height:1.5;\">" +
-            "<strong>Soluciones inmediatas:</strong><br>" +
-            "1. Pulsa <strong>\"🌐 Abrir en Navegador\"</strong> para usar el micrófono en una pestaña nativa.<br>" +
-            "2. O ejecuta en consola: <code>python3 scripts/voice_stt.py --record</code>" +
-            "</div>";
-        } else if (event.error === "no-speech") {
-          resElem.innerHTML = "<span style=\"color:#facc15;\">No se detectó audio. Pulsa el botón de micrófono y habla cerca del dispositivo.</span>";
-        } else {
-          resElem.innerHTML = "<span style=\"color:#ef4444;\">Error de reconocimiento: " + event.error + "</span>";
-        }
-      }
+      showWebviewRestriction();
     };
 
     rec.onend = () => {
@@ -1530,6 +1510,30 @@ Hemos identificado y solucionado el comportamiento de `Ctrl + Alt + D` y los per
     return false;
   }
 
+  let dictationWatchdog = null;
+
+  function showWebviewRestriction() {
+    updateMicUI(false);
+    isListening = false;
+    if (dictationWatchdog) { clearTimeout(dictationWatchdog); dictationWatchdog = null; }
+    const st = document.getElementById("dictation-status");
+    const resElem = document.getElementById("dictation-result");
+    if (st) {
+      st.textContent = "Micrófono restringido por el IDE";
+      st.style.color = "#ef4444";
+    }
+    if (resElem) {
+      resElem.innerHTML = "<div style=\"background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
+        "<span style=\"color:#ef4444; font-weight:bold; font-size:13px;\">⚠️ El marco del chat no tiene acceso al micrófono de Windows</span><br>" +
+        "<span style=\"font-size:11px; color:#ffffff; line-height:1.4;\">Estás ejecutando el IDE sobre WSL2. Los marcos embebidos de Electron no permiten capturar audio de la tarjeta física.</span>" +
+        "</div>" +
+        "<div style=\"font-size:12px; color:#ffffff; line-height:1.6;\">" +
+        "<strong>Para dictar por voz y comandos hands-free:</strong><br>" +
+        "👉 Pulsa el botón <strong>\"🌐 Abrir en Navegador\"</strong> abajo para abrirlo en Chrome o Edge donde tu micrófono funciona al 100%." +
+        "</div>";
+    }
+  }
+
   function toggleDictation() {
     const drawer = document.getElementById("dictation-drawer");
     if (drawer && !drawer.classList.contains("open")) {
@@ -1540,61 +1544,54 @@ Hemos identificado y solucionado el comportamiento de `Ctrl + Alt + D` y los per
     const resElem = document.getElementById("dictation-result");
 
     if (!SpeechRecognition) {
-      if (st) {
-        st.textContent = "No disponible en webview";
-        st.style.color = "#facc15";
-      }
-      if (resElem) {
-        resElem.innerHTML = "<div style=\"background:rgba(250, 204, 21, 0.15); border:1px solid #facc15; border-radius:6px; padding:8px 10px; margin-bottom:8px;\">" +
-          "<span style=\"color:#facc15; font-weight:bold; font-size:12px;\">ℹ️ Web Speech API no disponible en este marco</span><br>" +
-          "<span style=\"font-size:11px; color:#ffffff;\">Los paneles incrustados de Electron no exponen el motor STT de Chromium.</span>" +
-          "</div>" +
-          "<div style=\"font-size:12px; color:#ffffff; line-height:1.5;\">" +
-          "<strong>Soluciones:</strong><br>" +
-          "1. Pulsa <strong>\"🌐 Abrir en Navegador\"</strong> para usar el micrófono en Chrome o Firefox.<br>" +
-          "2. O ejecuta: <code>python3 scripts/voice_stt.py --record --duration 5</code>" +
-          "</div>";
-      }
+      showWebviewRestriction();
       return;
     }
 
     if (!recognition) {
-      recognition = initSpeechRecognition();
+      try {
+        recognition = initSpeechRecognition();
+      } catch (err) {
+        console.warn("Recognition init error:", err);
+        showWebviewRestriction();
+        return;
+      }
     }
-    if (!recognition) return;
+    if (!recognition) {
+      showWebviewRestriction();
+      return;
+    }
 
     if (isListening) {
+      if (dictationWatchdog) { clearTimeout(dictationWatchdog); dictationWatchdog = null; }
       recognition.stop();
     } else {
       if (st) {
         st.textContent = "Iniciando micrófono...";
         st.style.color = "#38bdf8";
       }
+
+      if (dictationWatchdog) clearTimeout(dictationWatchdog);
+      dictationWatchdog = setTimeout(() => {
+        if (!isListening) {
+          showWebviewRestriction();
+        }
+      }, 1200);
+
       try {
         recognition.start();
       } catch (e) {
         console.warn("Recognition start error:", e);
-        try {
-          recognition.stop();
-        } catch (_) {}
-        setTimeout(() => {
-          try {
-            recognition.start();
-          } catch (err2) {
-            if (st) { st.textContent = "Error de inicio"; st.style.color = "#ef4444"; }
-            if (resElem) {
-              resElem.innerHTML = "<span style=\"color:#ef4444;\">No se pudo iniciar el micrófono: " + (err2.message || err2) + "</span><br><br>" +
-                "💡 Pulsa <strong>\"🌐 Abrir en Navegador\"</strong> o ejecuta <code>python3 scripts/voice_stt.py --record</code>.";
-            }
-          }
-        }, 150);
+        showWebviewRestriction();
       }
     }
   }
 
+  const ASSISTANT_FILE_URL = "file:///home/fernando/antigravity-voice-assistant/audio_assistant.html";
+
   function openInBrowser() {
     try {
-      window.open(window.location.href, "_blank");
+      window.open(ASSISTANT_FILE_URL, "_blank");
     } catch (e) {
       console.warn("Could not open in browser:", e);
     }
