@@ -13,8 +13,58 @@ import json
 import urllib.parse
 from pathlib import Path
 
+import tempfile
+import subprocess
+
 PORT = 9000
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+def synthesize_speech(text: str, rate: float = 1.0, voice: str = "es-MX-DaliaNeural") -> tuple:
+    """Retorna (bytes_data, content_type) usando síntesis neuronal de alta fidelidad con fallback local."""
+    # 1. Motor neuronal natural de alta fidelidad (Microsoft Neural vía edge-tts)
+    try:
+        import asyncio
+        import edge_tts
+        fd, tmp_file = tempfile.mkstemp(suffix=".mp3", prefix="antigravity_neural_")
+        os.close(fd)
+        rate_int = int((rate - 1.0) * 100)
+        rate_str = f"{rate_int:+d}%"
+
+        async def run_edge():
+            comm = edge_tts.Communicate(text, voice, rate=rate_str)
+            await comm.save(tmp_file)
+
+        asyncio.run(run_edge())
+        if os.path.exists(tmp_file) and os.path.getsize(tmp_file) > 0:
+            with open(tmp_file, "rb") as f:
+                data = f.read()
+            try:
+                os.remove(tmp_file)
+            except Exception:
+                pass
+            return data, "audio/mpeg"
+    except Exception as e:
+        print(f"[Aviso Neural TTS] {e}, usando motor local...", file=sys.stderr)
+
+    # 2. Fallback local: espeak-ng en español latino
+    fd, tmp_file = tempfile.mkstemp(suffix=".wav", prefix="antigravity_espeak_")
+    os.close(fd)
+    try:
+        speed_val = max(80, min(350, int(160 * rate)))
+        cmd = ["espeak-ng", "-v", "es-la", "-s", str(speed_val), "-w", tmp_file, text]
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        with open(tmp_file, "rb") as f:
+            data = f.read()
+        return data, "audio/wav"
+    except Exception as e:
+        print(f"[Error Fallback TTS] {e}", file=sys.stderr)
+        return b"", ""
+    finally:
+        if os.path.exists(tmp_file):
+            try:
+                os.remove(tmp_file)
+            except Exception:
+                pass
 
 class VoiceRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -50,35 +100,35 @@ class VoiceRequestHandler(http.server.SimpleHTTPRequestHandler):
             params = urllib.parse.parse_qs(query)
             text = params.get("text", [""])[0]
             rate = float(params.get("rate", ["1.0"])[0])
+            profile = params.get("profile", ["natural"])[0].lower()
+            voice_param = params.get("voice", [""])[0]
+
             if not text:
                 self.send_error(400, "Missing text parameter")
                 return
 
-            import tempfile
-            import subprocess
-            fd, tmp_wav = tempfile.mkstemp(suffix=".wav", prefix="antigravity_tts_")
-            os.close(fd)
-            try:
-                speed_val = max(80, min(350, int(160 * rate)))
-                cmd = ["espeak-ng", "-v", "es-la", "-s", str(speed_val), "-w", tmp_wav, text]
-                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            voice_map = {
+                "dalia": "es-MX-DaliaNeural",
+                "jorge": "es-MX-JorgeNeural",
+                "alvaro": "es-ES-AlvaroNeural",
+                "elvira": "es-ES-ElviraNeural",
+                "natural": "es-MX-DaliaNeural",
+                "clear": "es-ES-AlvaroNeural",
+                "calm": "es-ES-ElviraNeural",
+                "deep": "es-MX-JorgeNeural"
+            }
+            target_voice = voice_param if voice_param else voice_map.get(profile, "es-MX-DaliaNeural")
 
-                with open(tmp_wav, "rb") as f:
-                    wav_data = f.read()
+            data, content_type = synthesize_speech(text=text, rate=rate, voice=target_voice)
+            if not data:
+                self.send_error(500, "TTS generation failed")
+                return
 
-                self.send_response(200)
-                self.send_header("Content-Type", "audio/wav")
-                self.send_header("Content-Length", str(len(wav_data)))
-                self.end_headers()
-                self.wfile.write(wav_data)
-            except Exception as e:
-                self.send_error(500, f"TTS generation error: {e}")
-            finally:
-                if os.path.exists(tmp_wav):
-                    try:
-                        os.remove(tmp_wav)
-                    except Exception:
-                        pass
+            self.send_response(200)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
             return
         return super().do_GET()
 

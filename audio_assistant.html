@@ -1118,7 +1118,7 @@ El comando CLI ahora graba directamente desde el micrófono físico de Windows a
 
   function playViaServerAudio(textToPlay, currentSec) {
     try {
-      const url = "http://localhost:9000/api/tts?rate=" + currentRate + "&text=" + encodeURIComponent(textToPlay);
+      const url = "http://localhost:9000/api/tts?rate=" + currentRate + "&profile=" + encodeURIComponent(currentVoiceProfile) + "&text=" + encodeURIComponent(textToPlay);
       serverAudio = new Audio(url);
       serverAudio.volume = currentVolume;
 
@@ -1129,7 +1129,7 @@ El comando CLI ahora graba directamente desde el micrófono físico de Windows a
         const sub = document.getElementById("track-subtitle");
         if (sub) {
           const secPrefix = sections.length > 1 ? "[" + (currentSectionIndex + 1) + "/" + sections.length + "] " : "";
-          sub.textContent = secPrefix + currentSec.title + " (Audio IDE " + currentRate.toFixed(1) + "x)";
+          sub.textContent = secPrefix + currentSec.title + " (Voz Neural " + currentRate.toFixed(1) + "x)";
         }
         startProgressBar();
       };
