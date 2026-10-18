@@ -501,6 +501,25 @@
     border-radius: 4px;
     margin-right: 6px;
   }
+  .browser-btn {
+    background: #0284c7;
+    color: #ffffff;
+    border: 1px solid #38bdf8;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+  .browser-btn:hover {
+    background: #0369a1;
+    border-color: #7dd3fc;
+    transform: translateY(-1px);
+  }
   /* Modo solo iconos */
   body.mode-icons .btn-lbl {
     display: none;
@@ -509,7 +528,7 @@
 </head>
 <body>
 
-<div class="player-card" id="card">
+<div class="player-card" id="card" tabindex="0" onclick="this.focus(); window.focus();" title="Haz clic en el reproductor para activar atajos de teclado">
   <div class="player-content">
     <!-- Primera Fila: Avatar, Info, Menú, Power/Stop -->
     <div class="top-row">
@@ -681,6 +700,9 @@
       <span>⌨️ Atajos de Teclado Accesibles</span>
       <span style="font-size:11px; color:var(--player-subtext);">Control global hands-free</span>
     </div>
+    <div style="font-size:11px; color:#facc15; margin-bottom:8px; padding:5px 8px; background:rgba(250,204,21,0.1); border-radius:5px; border-left:3px solid #facc15; line-height:1.4;">
+      💡 <strong>Importante:</strong> Haz clic dentro del reproductor para enfocarlo antes de usar los atajos de teclado.
+    </div>
     <div class="shortcuts-grid">
       <div class="shortcut-item"><span>Reproducir / Pausa</span><div><kbd>Space</kbd> / <kbd>Ctrl+Alt+Space</kbd></div></div>
       <div class="shortcut-item"><span>Reiniciar audio / sección</span><div><kbd>Ctrl+Alt+R</kbd></div></div>
@@ -703,36 +725,44 @@
     <div class="dictation-box" id="dictation-result">
       Pulsa el botón de micrófono o <kbd>Ctrl+Alt+D</kbd> y habla. Puedes dictar un prompt o dar comandos como <em>"pausar"</em>, <em>"continuar"</em>, <em>"siguiente"</em>, <em>"anterior"</em>, <em>"más rápido"</em>.
     </div>
-    <div class="text-footer" style="justify-content:space-between; margin-top:8px;">
-      <span style="font-size:11px; color:var(--player-subtext);">
-        Comandos: <strong>pausar</strong>, <strong>continuar</strong>, <strong>siguiente</strong>, <strong>anterior</strong>, <strong>reiniciar</strong>, <strong>más rápido</strong>, <strong>silencio</strong>.
-      </span>
+    
+    <!-- Barra de acciones rápidas para navegador y terminal -->
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; align-items:center; justify-content:space-between;">
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="browser-btn" id="open-browser-btn" onclick="openInBrowser()" title="Abrir asistente en tu navegador con permisos completos de micrófono">
+          🌐 Abrir en Navegador
+        </button>
+        <button class="icon-copy-btn" id="copy-cli-btn" onclick="copyCliCommand()" title="Copiar comando para dictar desde terminal">
+          💻 Copiar Comando CLI
+        </button>
+      </div>
       <button class="icon-copy-btn" id="copy-dictation-btn" onclick="copyDictationText()" title="Copiar texto dictado al portapapeles">
         📋 Copiar Prompt
       </button>
+    </div>
+
+    <div style="margin-top:8px; font-size:11px; color:var(--player-subtext); line-height:1.4;">
+      💡 <strong>Comandos de voz:</strong> <em>pausar</em>, <em>continuar</em>, <em>siguiente</em>, <em>anterior</em>, <em>reiniciar</em>, <em>más rápido</em>, <em>silencio</em>.
     </div>
   </div>
 </div>
 
 <div id="raw-text-source" style="display:none;">
-## 🎙️ Asistente de Voz Accesible para Antigravity
+## 🎙️ Asistente de Voz y Diagnóstico de Micrófono
 
-Bienvenido al asistente de voz accesible. Usa los controles, atajos de teclado o comandos de voz.
-
----
-
-## ⌨️ Atajos y Comandos de Voz
-1. **Dictado y Comandos**: Pulsa `Ctrl + Alt + D` o el botón 🎙️ para activar el micrófono.
-2. **Comandos Manos Libres**: Di *"pausar"*, *"continuar"*, *"siguiente"*, *"anterior"*, *"más rápido"*.
-3. **Navegación de Secciones**: Pulsa `Ctrl + Alt + →` para la siguiente sección y `Ctrl + Alt + ←` para la anterior.
-4. **Reproducción**: Pulsa Barra Espaciadora o `Ctrl + Alt + Space`.
+Hemos identificado y solucionado el comportamiento de `Ctrl + Alt + D` y los permisos del micrófono.
 
 ---
 
-## 🎧 Calidad y Diccionario Técnico
-- Diccionario fonético para desarrolladores integrado automáticamente (JSON, API, CLI, SQL, Git, regex).
-- Navegación granular por encabezados y secciones con feedback sonoro no intrusivo.
+## 🔍 Causa Raíz
+1. **Enfoque de Atajos**: El reproductor vive dentro de un marco incrustado del chat. Para que detecte `Ctrl + Alt + D` o `Space`, haz un clic sobre la tarjeta del reproductor para enfocarla.
+2. **Micrófono en Marcos Incrustados**: Por seguridad, los marcos webview de Electron bloquean el acceso directo al micrófono del sistema.
 
+---
+
+## ⚡ Soluciones Rápidas Habilitadas
+1. **Abrir en Navegador**: En el menú de Dictar, pulsa **"Abrir en Navegador"** para dictar con tu micrófono nativo en Chrome o Firefox.
+2. **Dictar desde Terminal**: Usa `python3 scripts/voice_stt.py --record --duration 5` para transcribir directamente con Whisper local sin depender de marcos web.
 </div>
 
 <script>
@@ -1307,18 +1337,19 @@ Bienvenido al asistente de voz accesible. Usa los controles, atajos de teclado o
   changeButtonMode(savedBtnMode);
 
   // --- 4. Atajos de Teclado Globales Accesibles ---
-  window.addEventListener("keydown", (e) => {
+  function handleGlobalKeyDown(e) {
     const isInput = ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName);
-    const hasMod = e.ctrlKey && e.altKey;
+    const key = (e.key || "").toLowerCase();
+    const hasMod = (e.ctrlKey && e.altKey) || (e.altKey && (key === "d" || key === "r" || key === "s" || key === "m"));
 
     if (!isInput || hasMod) {
       if (e.code === "Space" && (!isInput || hasMod)) {
         e.preventDefault();
         togglePlay();
-      } else if (hasMod && (e.code === "KeyR" || e.key.toLowerCase() === "r")) {
+      } else if (hasMod && (e.code === "KeyR" || key === "r")) {
         e.preventDefault();
         restartSpeech();
-      } else if (hasMod && (e.code === "KeyS" || e.key.toLowerCase() === "s")) {
+      } else if (hasMod && (e.code === "KeyS" || key === "s")) {
         e.preventDefault();
         stopSpeech();
       } else if (hasMod && e.code === "ArrowRight") {
@@ -1339,15 +1370,18 @@ Bienvenido al asistente de voz accesible. Usa los controles, atajos de teclado o
         const slider = document.getElementById("rate-slider");
         if (slider) slider.value = newRate.toFixed(1);
         setRate(newRate);
-      } else if (hasMod && (e.code === "KeyM" || e.key.toLowerCase() === "m")) {
+      } else if (hasMod && (e.code === "KeyM" || key === "m")) {
         e.preventDefault();
         toggleMute();
-      } else if (hasMod && (e.code === "KeyD" || e.key.toLowerCase() === "d")) {
+      } else if ((hasMod && (e.code === "KeyD" || key === "d")) || (e.altKey && key === "d")) {
         e.preventDefault();
         toggleDictation();
       }
     }
-  });
+  }
+
+  window.addEventListener("keydown", handleGlobalKeyDown);
+  document.addEventListener("keydown", handleGlobalKeyDown);
 
   // --- 5. Reconocimiento de Voz y Comandos Hands-Free ---
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1408,9 +1442,27 @@ Bienvenido al asistente de voz accesible. Usa los controles, atajos de teclado o
     rec.onerror = (event) => {
       console.warn("Speech recognition error:", event.error);
       const st = document.getElementById("dictation-status");
+      const resElem = document.getElementById("dictation-result");
       if (st) {
         st.textContent = "Error: " + event.error;
         st.style.color = "#ef4444";
+      }
+      if (resElem) {
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          resElem.innerHTML = "<div style=\"background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:6px; padding:8px 10px; margin-bottom:8px;\">" +
+            "<span style=\"color:#ef4444; font-weight:bold; font-size:12px;\">⚠️ Micrófono no permitido en el marco incrustado del IDE</span><br>" +
+            "<span style=\"font-size:11px; color:#ffffff;\">Por seguridad, Electron bloquea el micrófono en webviews de chat.</span>" +
+            "</div>" +
+            "<div style=\"font-size:12px; color:#ffffff; line-height:1.5;\">" +
+            "<strong>Soluciones inmediatas:</strong><br>" +
+            "1. Pulsa <strong>\"🌐 Abrir en Navegador\"</strong> para usar el micrófono en una pestaña nativa.<br>" +
+            "2. O ejecuta en consola: <code>python3 scripts/voice_stt.py --record</code>" +
+            "</div>";
+        } else if (event.error === "no-speech") {
+          resElem.innerHTML = "<span style=\"color:#facc15;\">No se detectó audio. Pulsa el botón de micrófono y habla cerca del dispositivo.</span>";
+        } else {
+          resElem.innerHTML = "<span style=\"color:#ef4444;\">Error de reconocimiento: " + event.error + "</span>";
+        }
       }
     };
 
@@ -1479,29 +1531,97 @@ Bienvenido al asistente de voz accesible. Usa los controles, atajos de teclado o
   }
 
   function toggleDictation() {
+    const drawer = document.getElementById("dictation-drawer");
+    if (drawer && !drawer.classList.contains("open")) {
+      toggleDrawer("dictation-drawer");
+    }
+
+    const st = document.getElementById("dictation-status");
+    const resElem = document.getElementById("dictation-result");
+
     if (!SpeechRecognition) {
-      alert("El reconocimiento de voz Web Speech no está disponible en este entorno. Usa Chrome, Edge o Electron compatible.");
+      if (st) {
+        st.textContent = "No disponible en webview";
+        st.style.color = "#facc15";
+      }
+      if (resElem) {
+        resElem.innerHTML = "<div style=\"background:rgba(250, 204, 21, 0.15); border:1px solid #facc15; border-radius:6px; padding:8px 10px; margin-bottom:8px;\">" +
+          "<span style=\"color:#facc15; font-weight:bold; font-size:12px;\">ℹ️ Web Speech API no disponible en este marco</span><br>" +
+          "<span style=\"font-size:11px; color:#ffffff;\">Los paneles incrustados de Electron no exponen el motor STT de Chromium.</span>" +
+          "</div>" +
+          "<div style=\"font-size:12px; color:#ffffff; line-height:1.5;\">" +
+          "<strong>Soluciones:</strong><br>" +
+          "1. Pulsa <strong>\"🌐 Abrir en Navegador\"</strong> para usar el micrófono en Chrome o Firefox.<br>" +
+          "2. O ejecuta: <code>python3 scripts/voice_stt.py --record --duration 5</code>" +
+          "</div>";
+      }
       return;
     }
+
     if (!recognition) {
       recognition = initSpeechRecognition();
     }
     if (!recognition) return;
 
-    const drawer = document.getElementById("dictation-drawer");
-    if (!drawer.classList.contains("open")) {
-      toggleDrawer("dictation-drawer");
-    }
-
     if (isListening) {
       recognition.stop();
     } else {
+      if (st) {
+        st.textContent = "Iniciando micrófono...";
+        st.style.color = "#38bdf8";
+      }
       try {
         recognition.start();
       } catch (e) {
-        recognition.stop();
+        console.warn("Recognition start error:", e);
+        try {
+          recognition.stop();
+        } catch (_) {}
+        setTimeout(() => {
+          try {
+            recognition.start();
+          } catch (err2) {
+            if (st) { st.textContent = "Error de inicio"; st.style.color = "#ef4444"; }
+            if (resElem) {
+              resElem.innerHTML = "<span style=\"color:#ef4444;\">No se pudo iniciar el micrófono: " + (err2.message || err2) + "</span><br><br>" +
+                "💡 Pulsa <strong>\"🌐 Abrir en Navegador\"</strong> o ejecuta <code>python3 scripts/voice_stt.py --record</code>.";
+            }
+          }
+        }, 150);
       }
     }
+  }
+
+  function openInBrowser() {
+    try {
+      window.open(window.location.href, "_blank");
+    } catch (e) {
+      console.warn("Could not open in browser:", e);
+    }
+  }
+
+  function copyCliCommand() {
+    const cmd = "python3 scripts/voice_stt.py --record --duration 5";
+    const btn = document.getElementById("copy-cli-btn");
+    navigator.clipboard.writeText(cmd).then(() => {
+      if (btn) {
+        const orig = btn.innerHTML;
+        btn.innerHTML = "✓ ¡Comando Copiado!";
+        setTimeout(() => { btn.innerHTML = orig; }, 1800);
+      }
+    }).catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = cmd;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (btn) {
+        const orig = btn.innerHTML;
+        btn.innerHTML = "✓ ¡Comando Copiado!";
+        setTimeout(() => { btn.innerHTML = orig; }, 1800);
+      }
+    });
   }
 
   function updateMicUI(active) {
