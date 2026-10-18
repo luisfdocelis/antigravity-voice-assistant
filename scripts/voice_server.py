@@ -10,6 +10,7 @@ import socketserver
 import os
 import sys
 import json
+import urllib.parse
 from pathlib import Path
 
 PORT = 9000
@@ -43,6 +44,41 @@ class VoiceRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps({"status": "ok", "service": "antigravity-voice-assistant"}).encode("utf-8"))
+            return
+        elif clean_path == "/api/tts":
+            query = urllib.parse.urlparse(self.path).query
+            params = urllib.parse.parse_qs(query)
+            text = params.get("text", [""])[0]
+            rate = float(params.get("rate", ["1.0"])[0])
+            if not text:
+                self.send_error(400, "Missing text parameter")
+                return
+
+            import tempfile
+            import subprocess
+            fd, tmp_wav = tempfile.mkstemp(suffix=".wav", prefix="antigravity_tts_")
+            os.close(fd)
+            try:
+                speed_val = max(80, min(350, int(160 * rate)))
+                cmd = ["espeak-ng", "-v", "es-la", "-s", str(speed_val), "-w", tmp_wav, text]
+                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+
+                with open(tmp_wav, "rb") as f:
+                    wav_data = f.read()
+
+                self.send_response(200)
+                self.send_header("Content-Type", "audio/wav")
+                self.send_header("Content-Length", str(len(wav_data)))
+                self.end_headers()
+                self.wfile.write(wav_data)
+            except Exception as e:
+                self.send_error(500, f"TTS generation error: {e}")
+            finally:
+                if os.path.exists(tmp_wav):
+                    try:
+                        os.remove(tmp_wav)
+                    except Exception:
+                        pass
             return
         return super().do_GET()
 

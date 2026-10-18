@@ -1063,22 +1063,40 @@ El comando CLI ahora graba directamente desde el micrófono físico de Windows a
     }
   }
 
+  let serverAudio = null;
+
   function togglePlay() {
-    if (!synth) return;
-    if (synth.speaking && !synth.paused) {
+    if (serverAudio) {
+      if (!serverAudio.paused) {
+        serverAudio.pause();
+        const btn = document.getElementById("play-btn");
+        if (btn) btn.textContent = "▶";
+      } else {
+        serverAudio.play();
+        const btn = document.getElementById("play-btn");
+        if (btn) btn.textContent = "⏸";
+      }
+      return;
+    }
+    if (synth && synth.speaking && !synth.paused) {
       synth.pause();
-      document.getElementById("play-btn").textContent = "▶";
-    } else if (synth.paused) {
+      const btn = document.getElementById("play-btn");
+      if (btn) btn.textContent = "▶";
+    } else if (synth && synth.paused) {
       synth.resume();
-      document.getElementById("play-btn").textContent = "⏸";
+      const btn = document.getElementById("play-btn");
+      if (btn) btn.textContent = "⏸";
     } else {
       speak(currentSectionIndex);
     }
   }
 
   function speak(startIndex) {
-    if (!synth) return;
-    synth.cancel();
+    if (serverAudio) {
+      try { serverAudio.pause(); } catch(_) {}
+      serverAudio = null;
+    }
+    if (synth) synth.cancel();
 
     if (typeof startIndex === "number") {
       currentSectionIndex = Math.max(0, Math.min(sections.length - 1, startIndex));
@@ -1087,6 +1105,62 @@ El comando CLI ahora graba directamente desde el micrófono físico de Windows a
     const currentSec = sections[currentSectionIndex] || { title: "Audio", text: plainTextToSpeak };
     const textToPlay = currentSec.text || plainTextToSpeak;
 
+    const isEmbeddedInIframe = window.self !== window.top;
+    const hasBrowserVoices = synth && synth.getVoices && synth.getVoices().length > 0;
+
+    // Si estamos en un iframe del IDE o no hay voces del navegador, usamos el motor Server Audio primero:
+    if (isEmbeddedInIframe || !hasBrowserVoices) {
+      playViaServerAudio(textToPlay, currentSec);
+    } else {
+      playViaBrowserSynth(textToPlay, currentSec);
+    }
+  }
+
+  function playViaServerAudio(textToPlay, currentSec) {
+    try {
+      const url = "http://localhost:9000/api/tts?rate=" + currentRate + "&text=" + encodeURIComponent(textToPlay);
+      serverAudio = new Audio(url);
+      serverAudio.volume = currentVolume;
+
+      serverAudio.onplay = () => {
+        playEarcon("start");
+        const btn = document.getElementById("play-btn");
+        if (btn) btn.textContent = "⏸";
+        const sub = document.getElementById("track-subtitle");
+        if (sub) {
+          const secPrefix = sections.length > 1 ? "[" + (currentSectionIndex + 1) + "/" + sections.length + "] " : "";
+          sub.textContent = secPrefix + currentSec.title + " (Audio IDE " + currentRate.toFixed(1) + "x)";
+        }
+        startProgressBar();
+      };
+
+      serverAudio.onended = () => {
+        if (currentSectionIndex < sections.length - 1) {
+          currentSectionIndex++;
+          speak(currentSectionIndex);
+        } else {
+          playEarcon("stop");
+          resetPlay();
+        }
+      };
+
+      serverAudio.onerror = () => {
+        playViaBrowserSynth(textToPlay, currentSec);
+      };
+
+      const p = serverAudio.play();
+      if (p && p.catch) {
+        p.catch(() => {
+          playViaBrowserSynth(textToPlay, currentSec);
+        });
+      }
+    } catch (_) {
+      playViaBrowserSynth(textToPlay, currentSec);
+    }
+  }
+
+  function playViaBrowserSynth(textToPlay, currentSec) {
+    if (!synth) return;
     setTimeout(() => {
       const utter = new SpeechSynthesisUtterance(textToPlay);
       currentUtterance = utter;
@@ -1166,6 +1240,10 @@ El comando CLI ahora graba directamente desde el micrófono físico de Windows a
   }
 
   function stopSpeech() {
+    if (serverAudio) {
+      try { serverAudio.pause(); } catch(_) {}
+      serverAudio = null;
+    }
     if (synth) synth.cancel();
     playEarcon("stop");
     resetPlay();
@@ -1220,6 +1298,9 @@ El comando CLI ahora graba directamente desde el micrófono físico de Windows a
 
     if (currentUtterance) {
       currentUtterance.volume = currentVolume;
+    }
+    if (serverAudio) {
+      serverAudio.volume = currentVolume;
     }
   }
 
@@ -1572,6 +1653,9 @@ El comando CLI ahora graba directamente desde el micrófono físico de Windows a
 
   function openInBrowser() {
     try {
+      navigator.clipboard.writeText(ASSISTANT_URL);
+    } catch (_) {}
+    try {
       window.open(ASSISTANT_URL, "_blank");
     } catch (e) {
       console.warn("Could not open in browser:", e);
@@ -1587,21 +1671,21 @@ El comando CLI ahora graba directamente desde el micrófono físico de Windows a
 
     if (isEmbeddedInIframe) {
       // En marcos incrustados del IDE, Chromium bloquea el hardware del micrófono por política de seguridad
-      // Abrir inmediatamente la ventana con contexto seguro en Chrome/Edge
       openInBrowser();
       const st = document.getElementById("dictation-status");
       const resElem = document.getElementById("dictation-result");
       if (st) {
-        st.textContent = "Abriendo micrófono en navegador...";
+        st.textContent = "📋 Enlace copiado al portapapeles";
         st.style.color = "#38bdf8";
       }
       if (resElem) {
         resElem.innerHTML = "<div style=\"background:rgba(56, 189, 248, 0.15); border:1px solid #38bdf8; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
-          "<span style=\"color:#38bdf8; font-weight:bold; font-size:13px;\">🎙️ Se abrió la pestaña de dictado en tu navegador:</span><br>" +
-          "<span style=\"font-size:11px; color:#ffffff; line-height:1.4;\">Por seguridad, el panel de chat del IDE no permite capturar el micrófono. Habla en la pestaña abierta en Chrome o Edge para dictar con tu micrófono de Windows.</span>" +
+          "<span style=\"color:#38bdf8; font-weight:bold; font-size:13px;\">🎙️ Dictado con Micrófono de Windows:</span><br>" +
+          "<span style=\"font-size:12px; color:#ffffff; line-height:1.5;\">Por seguridad, el panel de chat de Antigravity IDE no permite capturar el hardware del micrófono. Hemos copiado la URL a tu portapapeles.</span>" +
           "</div>" +
-          "<div style=\"font-size:12px; color:#ffffff;\">" +
-          "👉 Si la ventana no se abrió automáticamente: <a href=\"http://localhost:9000/?autoDictate=true\" target=\"_blank\" style=\"color:#38bdf8; font-weight:bold; text-decoration:underline;\">Haz clic aquí para abrir</a>." +
+          "<div style=\"font-size:12px; color:#ffffff; line-height:1.6;\">" +
+          "👉 Ábrela en tu navegador (Chrome/Edge en Windows):<br>" +
+          "<a href=\"http://localhost:9000/?autoDictate=true\" target=\"_blank\" style=\"color:#facc15; font-weight:bold; font-size:13px; text-decoration:underline;\">http://localhost:9000/?autoDictate=true</a>" +
           "</div>";
       }
       return;
