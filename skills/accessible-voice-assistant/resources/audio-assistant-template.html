@@ -780,24 +780,24 @@
 </div>
 
 <div id="raw-text-source" style="display:none;">
-## 🎙️ Estado de Dictado por Voz y Grabación CLI
+## 🎙️ Actualización a Voces Neuronales de Alta Fidelidad
 
-Hemos resuelto y verificado las dos vías de grabación y dictado por voz en tu entorno:
-
----
-
-## 1. Servidor Local y Dictado Web (Puerto 9000)
-El servidor local está activo en el puerto 9000:
-- URL de dictado: http://localhost:9000/?autoDictate=true
-- Ábrelo en Chrome o Edge en Windows para dictar directamente con el micrófono de Windows y transcribir en tiempo real.
-- Pulsa Copiar Prompt para transferir tu dictado al chat al terminar.
+Hemos reemplazado la voz robótica por voces neuronales humanas de Microsoft:
 
 ---
 
-## 2. Grabación y Transcripción desde Terminal CLI
-El comando CLI ahora graba directamente desde el micrófono físico de Windows a través de WSL:
-- python3 scripts/voice_stt.py --record --duration 5
-- La grabación captura tu voz con winmm en Windows y la transcribe automáticamente con Google Speech Recognition sin requerir API keys.
+## 1. Voz Neural Clara y Natural
+El servidor local ahora genera audio neuronal de alta fidelidad:
+- **Calidad humana**: Voz fluida, nítida y perfectamente articulada sin distorsión metálica.
+- **Perfiles disponibles**: Puedes elegir entre Dalia (natural y cálida), Álvaro (clara y elegante), o Jorge (grave).
+- Pulsa Reproducir para escuchar la nueva voz inmediatamente.
+
+---
+
+## 2. Dictado por Voz y Comandos
+Para hablar con tu micrófono de Windows:
+- Abre http://localhost:9000/?autoDictate=true en Chrome o Edge.
+- O ejecuta en tu terminal: python3 scripts/voice_stt.py --record --duration 5
 </div>
 
 <script>
