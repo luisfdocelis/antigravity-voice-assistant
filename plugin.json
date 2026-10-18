@@ -2,7 +2,7 @@
   "name": "accessible-voice-assistant",
   "description": "Accessible voice assistant with media player, multilingual speech synthesis (English/Spanish/auto-detect), 16 high-contrast themes, speed and volume controls, and split-tab mode for low-vision users.",
   "version": "1.1.0",
-  "author": "CrowKit Team",
+  "author": "Antigravity Voice Assistant Team",
   "license": "MIT",
   "homepage": "https://github.com/luisfdocelis/antigravity-voice-assistant",
   "suggestedPrompts": [
