@@ -28,10 +28,17 @@ class VoiceRequestHandler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self):
-        if self.path in ("/", "/audio_assistant.html"):
-            self.path = "/audio_assistant.html"
-            return super().do_GET()
-        elif self.path == "/api/health":
+        clean_path = self.path.split("?")[0]
+        if clean_path in ("/", "/audio_assistant.html"):
+            file_path = BASE_DIR / "audio_assistant.html"
+            if file_path.exists():
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                with open(file_path, "rb") as f:
+                    self.wfile.write(f.read())
+                return
+        elif clean_path == "/api/health":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()

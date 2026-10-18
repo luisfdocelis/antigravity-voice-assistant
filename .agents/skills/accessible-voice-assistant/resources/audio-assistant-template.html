@@ -780,17 +780,24 @@
 </div>
 
 <div id="raw-text-source" style="display:none;">
-## 🎙️ Dictado por Voz y Comandos Hands-Free
+## 🎙️ Estado de Dictado por Voz y Grabación CLI
 
-Hemos conectado el botón de micrófono del chat para abrir automáticamente la sesión de dictado activa.
+Hemos resuelto y verificado las dos vías de grabación y dictado por voz en tu entorno:
 
 ---
 
-## ⚡ Flujo de Dictado en 1 Clic
-1. **Pulsar el micrófono**: Al pulsar `🎙️ Dictar` (o `Ctrl + Alt + D`) en el chat, se abrirá de inmediato tu navegador en `http://localhost:9000/?autoDictate=true`.
-2. **Habla al instante**: Tu navegador (Chrome o Edge en Windows) iniciará la escucha automáticamente. Habla con naturalidad y verás la transcripción en vivo.
-3. **Copiar Prompt**: Pulsa el botón `Copiar Prompt` para pegar tu instrucción en el chat.
-4. **Comandos de 1 Clic en el Chat**: Si solo deseas pausar, reanudar o cambiar velocidad, pulsa los nuevos botones de comando rápido directamente en la tarjeta sin necesidad de hablar.
+## 1. Servidor Local y Dictado Web (Puerto 9000)
+El servidor local está activo en el puerto 9000:
+- URL de dictado: http://localhost:9000/?autoDictate=true
+- Ábrelo en Chrome o Edge en Windows para dictar directamente con el micrófono de Windows y transcribir en tiempo real.
+- Pulsa Copiar Prompt para transferir tu dictado al chat al terminar.
+
+---
+
+## 2. Grabación y Transcripción desde Terminal CLI
+El comando CLI ahora graba directamente desde el micrófono físico de Windows a través de WSL:
+- python3 scripts/voice_stt.py --record --duration 5
+- La grabación captura tu voz con winmm en Windows y la transcribe automáticamente con Google Speech Recognition sin requerir API keys.
 </div>
 
 <script>
@@ -1695,6 +1702,8 @@ Hemos conectado el botón de micrófono del chat para abrir automáticamente la 
         setTimeout(() => { btn.innerHTML = orig; }, 1800);
       }
     });
+  }
+
   // Auto-iniciar dictado si se abrió con ?autoDictate=true en navegador
   try {
     const urlParams = new URLSearchParams(window.location.search);
