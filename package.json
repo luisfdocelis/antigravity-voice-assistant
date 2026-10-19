@@ -27,6 +27,11 @@
     "audio"
   ],
   "main": "./extension.js",
+  "scripts": {
+    "package": "npx -y @vscode/vsce package",
+    "package:force": "npx -y @vscode/vsce package --allow-missing-repository --no-git-tag-version",
+    "verify": "bash .agents/scripts/verify.sh"
+  },
   "activationEvents": [
     "onStartupFinished"
   ],
