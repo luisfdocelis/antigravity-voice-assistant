@@ -745,15 +745,15 @@
       <span id="dictation-status" style="font-size:11px; color:var(--player-subtext);">Listo</span>
     </div>
     <div class="dictation-box" id="dictation-result">
-      ⚡ <strong>Modo Nativo IDE:</strong> Presiona <kbd style="background:#0f172a; padding:2px 6px; border-radius:4px; border:1px solid #38bdf8; color:#facc15;">Ctrl+Alt+D</kbd> o haz clic en <strong>"$(mic) Dictar"</strong> en la barra inferior del IDE para dictar directamente sin navegador.
+      Haz clic en <strong>"🎙️ Grabar Voz en Chat"</strong> o en el icono de micrófono 🎙️ arriba para hablar durante 5 segundos.
     </div>
     
     <!-- Barra de acciones rápidas para navegador y terminal -->
     <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; align-items:center; justify-content:space-between;">
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <a href="http://localhost:9000/?autoDictate=true" target="_blank" class="browser-btn" id="open-browser-btn" style="text-decoration:none;" title="Abrir asistente en tu navegador (opción web alternativa)">
-          🌐 Hablar en Navegador (Alternativo)
-        </a>
+        <button class="browser-btn" id="inchat-record-btn" onclick="startDirectDictation()" style="border:none; cursor:pointer;" title="Grabar 5 segundos desde el micrófono">
+          🎙️ Grabar Voz en Chat (5s)
+        </button>
         <button class="icon-copy-btn" id="copy-cli-btn" onclick="copyCliCommand()" title="Copiar comando para dictar desde terminal">
           💻 Copiar CLI
         </button>
@@ -1687,49 +1687,107 @@ Hemos transformado el plugin en una extensión nativa completa (`.vsix`) para An
     });
   }
 
-  function toggleDictation() {
-    const isEmbeddedInIframe = window.self !== window.top;
+  let isDictating = false;
+  const escapeHtml = (s) => (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  async function startDirectDictation() {
+    if (isDictating) return;
+    isDictating = true;
+
     const drawer = document.getElementById("dictation-drawer");
     if (drawer && !drawer.classList.contains("open")) {
       toggleDrawer("dictation-drawer");
     }
 
-    if (vscodeApi) {
-      vscodeApi.postMessage({ command: 'startDictation' });
-      const st = document.getElementById("dictation-status");
-      const resElem = document.getElementById("dictation-result");
+    const st = document.getElementById("dictation-status");
+    const resElem = document.getElementById("dictation-result");
+    const micBtn = document.getElementById("mic-btn");
+    const recordBtn = document.getElementById("inchat-record-btn");
+
+    if (st) {
+      st.textContent = "🔴 Grabando (5s)... Habla ahora";
+      st.style.color = "#ef4444";
+    }
+    if (micBtn) micBtn.classList.add("active");
+    if (recordBtn) {
+      recordBtn.textContent = "🔴 Grabando (5s)...";
+      recordBtn.style.background = "#ef4444";
+    }
+    if (resElem) {
+      resElem.innerHTML = "<div style=\"background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:6px; padding:10px 12px;\">" +
+        "<span style=\"color:#ef4444; font-weight:bold; font-size:13px;\">🔴 Grabando micrófono (5 segundos)...</span><br>" +
+        "<span style=\"font-size:12px; color:#ffffff;\">Habla tu consulta o instrucción ahora. Al terminar se transcribirá automáticamente.</span>" +
+        "</div>";
+    }
+
+    try {
+      playChime(660, 0.15);
+    } catch (_) {}
+
+    try {
+      const resp = await fetch("http://localhost:9000/api/dictate?duration=5");
+      const data = await resp.json();
+
+      if (data && data.text && data.text.trim()) {
+        const text = data.text.trim();
+        recognizedPromptText = text;
+
+        if (st) {
+          st.textContent = "✓ ¡Transcrito y copiado!";
+          st.style.color = "#22c55e";
+        }
+        if (resElem) {
+          resElem.innerHTML = "<div style=\"background:rgba(34, 197, 94, 0.15); border:1px solid #22c55e; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
+            "<span style=\"color:#22c55e; font-weight:bold; font-size:13px;\">📝 Texto Dictado:</span><br>" +
+            "<span style=\"font-size:13px; color:#ffffff; font-weight:500;\">" + escapeHtml(text) + "</span>" +
+            "</div>" +
+            "<div style=\"font-size:11px; color:#facc15;\">✓ Copiado al portapapeles. Presiona <strong>Ctrl+V</strong> en el prompt de Antigravity para enviarlo.</div>";
+        }
+
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch (_) {}
+
+        try {
+          playChime(880, 0.2);
+        } catch (_) {}
+      } else {
+        if (st) {
+          st.textContent = "Aviso: No se detectó voz";
+          st.style.color = "#facc15";
+        }
+        if (resElem) {
+          resElem.innerHTML = "<div style=\"background:rgba(250, 204, 21, 0.12); border:1px solid #facc15; border-radius:6px; padding:10px 12px;\">" +
+            "<span style=\"color:#facc15; font-weight:bold; font-size:13px;\">⚠️ No se detectó voz clara:</span><br>" +
+            "<span style=\"font-size:12px; color:#ffffff;\">Asegúrate de hablar cerca de tu micrófono de Windows. Haz clic de nuevo en 🎙️ para reintentar.</span>" +
+            "</div>";
+        }
+      }
+    } catch (err) {
       if (st) {
-        st.textContent = "🎙️ Grabando micrófono de Windows...";
+        st.textContent = "Error al conectar con servidor de voz";
         st.style.color = "#ef4444";
       }
       if (resElem) {
-        resElem.innerHTML = "<div style=\"background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:6px; padding:10px 12px;\">" +
-          "<span style=\"color:#ef4444; font-weight:bold; font-size:13px;\">🔴 Grabando desde la extensión nativa...</span><br>" +
-          "<span style=\"font-size:12px; color:#ffffff;\">Habla ahora con tu micrófono de Windows. El texto se insertará directamente en el editor.</span>" +
-          "</div>";
+        resElem.innerHTML = "<span style=\"color:#ef4444;\">No se pudo contactar al servidor local en http://localhost:9000. Revisa que esté activo.</span>";
       }
-      return;
+    } finally {
+      isDictating = false;
+      if (micBtn) micBtn.classList.remove("active");
+      if (recordBtn) {
+        recordBtn.textContent = "🎙️ Grabar Voz en Chat (5s)";
+        recordBtn.style.background = "";
+      }
     }
+  }
 
-    if (isEmbeddedInIframe) {
-      // En marcos incrustados del IDE, Chromium bloquea el hardware del micrófono por política de seguridad
-      const st = document.getElementById("dictation-status");
-      const resElem = document.getElementById("dictation-result");
-      if (st) {
-        st.textContent = "⚡ Usa Ctrl+Alt+D en el IDE";
-        st.style.color = "#38bdf8";
-      }
-      if (resElem) {
-        resElem.innerHTML = "<div style=\"background:rgba(56, 189, 248, 0.15); border:1px solid #38bdf8; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
-          "<span style=\"color:#38bdf8; font-weight:bold; font-size:13px;\">🎙️ Dictado Nativo en Antigravity IDE:</span><br>" +
-          "<span style=\"font-size:12px; color:#ffffff; line-height:1.5;\">Presiona <kbd style=\"background:#0f172a; padding:2px 6px; border-radius:4px; border:1px solid #38bdf8; color:#facc15;\">Ctrl+Alt+D</kbd> o haz clic en <strong>$(mic) Dictar</strong> en la barra inferior del IDE para grabar con tu micrófono sin abrir navegador.</span>" +
-          "</div>" +
-          "<div style=\"font-size:12px; color:#94a3b8; line-height:1.5;\">" +
-          "Opción externa: <a href=\"http://localhost:9000/?autoDictate=true\" target=\"_blank\" style=\"color:#facc15; text-decoration:underline;\">Abrir en Navegador</a>" +
-          "</div>";
-      }
+  function toggleDictation() {
+    if (vscodeApi) {
+      vscodeApi.postMessage({ command: 'startDictation' });
       return;
     }
+    startDirectDictation();
+  }
 
     // Si ya estamos en el navegador con contexto seguro (localhost:9000):
     const st = document.getElementById("dictation-status");

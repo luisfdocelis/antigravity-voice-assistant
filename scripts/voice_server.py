@@ -131,6 +131,37 @@ class VoiceRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(data)
             return
+        elif clean_path == "/api/dictate":
+            query = urllib.parse.urlparse(self.path).query
+            params = urllib.parse.parse_qs(query)
+            duration = int(params.get("duration", ["5"])[0])
+            lang = params.get("lang", ["es"])[0]
+
+            try:
+                scripts_path = str(Path(__file__).resolve().parent)
+                if scripts_path not in sys.path:
+                    sys.path.insert(0, scripts_path)
+                import voice_stt
+
+                audio_file = voice_stt.record_audio(duration=duration)
+                text = ""
+                if audio_file and os.path.exists(audio_file):
+                    text = voice_stt.transcribe_google_free(audio_file, language=lang)
+                    try:
+                        os.remove(audio_file)
+                    except Exception:
+                        pass
+
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "ok", "text": text}).encode("utf-8"))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+            return
         return super().do_GET()
 
     def do_OPTIONS(self):

@@ -145,16 +145,16 @@ class VoiceAssistantViewProvider {
       localResourceRoots: [this._extensionUri]
     };
 
-    const htmlPath = path.join(this._extensionRoot, 'audio_assistant.html');
+    const htmlPath = path.join(this._extensionRoot, 'configuration.html');
     let htmlContent = '';
     try {
       if (fs.existsSync(htmlPath)) {
         htmlContent = fs.readFileSync(htmlPath, 'utf8');
       } else {
-        htmlContent = '<h2>Error: No se encontró audio_assistant.html</h2>';
+        htmlContent = '<h2>Error: No se encontró configuration.html</h2>';
       }
     } catch (err) {
-      htmlContent = `<h2>Error al cargar reproductor: ${err.message}</h2>`;
+      htmlContent = `<h2>Error al cargar configuración: ${err.message}</h2>`;
     }
 
     webviewView.webview.html = htmlContent;
