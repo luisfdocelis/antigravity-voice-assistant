@@ -745,14 +745,14 @@
       <span id="dictation-status" style="font-size:11px; color:var(--player-subtext);">Listo</span>
     </div>
     <div class="dictation-box" id="dictation-result">
-      Haz clic en <strong>"🎙️ Hablar en Navegador"</strong> para dictar con tu micrófono de Windows en tiempo real, o usa los botones de comando rápido abajo.
+      ⚡ <strong>Modo Nativo IDE:</strong> Presiona <kbd style="background:#0f172a; padding:2px 6px; border-radius:4px; border:1px solid #38bdf8; color:#facc15;">Ctrl+Alt+D</kbd> o haz clic en <strong>"$(mic) Dictar"</strong> en la barra inferior del IDE para dictar directamente sin navegador.
     </div>
     
     <!-- Barra de acciones rápidas para navegador y terminal -->
     <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; align-items:center; justify-content:space-between;">
       <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <a href="http://localhost:9000/?autoDictate=true" target="_blank" class="browser-btn" id="open-browser-btn" style="text-decoration:none;" title="Abrir asistente en tu navegador con permisos completos de micrófono">
-          🎙️ Hablar en Navegador (localhost:9000)
+        <a href="http://localhost:9000/?autoDictate=true" target="_blank" class="browser-btn" id="open-browser-btn" style="text-decoration:none;" title="Abrir asistente en tu navegador (opción web alternativa)">
+          🌐 Hablar en Navegador (Alternativo)
         </a>
         <button class="icon-copy-btn" id="copy-cli-btn" onclick="copyCliCommand()" title="Copiar comando para dictar desde terminal">
           💻 Copiar CLI
@@ -1713,21 +1713,19 @@ Hemos transformado el plugin en una extensión nativa completa (`.vsix`) para An
 
     if (isEmbeddedInIframe) {
       // En marcos incrustados del IDE, Chromium bloquea el hardware del micrófono por política de seguridad
-      openInBrowser();
       const st = document.getElementById("dictation-status");
       const resElem = document.getElementById("dictation-result");
       if (st) {
-        st.textContent = "📋 Enlace copiado al portapapeles";
+        st.textContent = "⚡ Usa Ctrl+Alt+D en el IDE";
         st.style.color = "#38bdf8";
       }
       if (resElem) {
         resElem.innerHTML = "<div style=\"background:rgba(56, 189, 248, 0.15); border:1px solid #38bdf8; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
-          "<span style=\"color:#38bdf8; font-weight:bold; font-size:13px;\">🎙️ Dictado con Micrófono de Windows:</span><br>" +
-          "<span style=\"font-size:12px; color:#ffffff; line-height:1.5;\">Por seguridad, el panel de chat de Antigravity IDE no permite capturar el hardware del micrófono. Hemos copiado la URL a tu portapapeles.</span>" +
+          "<span style=\"color:#38bdf8; font-weight:bold; font-size:13px;\">🎙️ Dictado Nativo en Antigravity IDE:</span><br>" +
+          "<span style=\"font-size:12px; color:#ffffff; line-height:1.5;\">Presiona <kbd style=\"background:#0f172a; padding:2px 6px; border-radius:4px; border:1px solid #38bdf8; color:#facc15;\">Ctrl+Alt+D</kbd> o haz clic en <strong>$(mic) Dictar</strong> en la barra inferior del IDE para grabar con tu micrófono sin abrir navegador.</span>" +
           "</div>" +
-          "<div style=\"font-size:12px; color:#ffffff; line-height:1.6;\">" +
-          "👉 Ábrela en tu navegador (Chrome/Edge en Windows):<br>" +
-          "<a href=\"http://localhost:9000/?autoDictate=true\" target=\"_blank\" style=\"color:#facc15; font-weight:bold; font-size:13px; text-decoration:underline;\">http://localhost:9000/?autoDictate=true</a>" +
+          "<div style=\"font-size:12px; color:#94a3b8; line-height:1.5;\">" +
+          "Opción externa: <a href=\"http://localhost:9000/?autoDictate=true\" target=\"_blank\" style=\"color:#facc15; text-decoration:underline;\">Abrir en Navegador</a>" +
           "</div>";
       }
       return;
