@@ -16,6 +16,11 @@ from pathlib import Path
 import tempfile
 import subprocess
 
+# Asegurar que las dependencias instaladas en ~/.local (pip install --user) estén disponibles
+for p in Path(os.path.expanduser("~/.local/lib")).glob("python*/site-packages"):
+    if str(p) not in sys.path:
+        sys.path.insert(0, str(p))
+
 PORT = 9000
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,29 +36,7 @@ def synthesize_speech(text: str, rate: float = 1.0, voice: str = "es-ES-AlvaroNe
     if not clean_text:
         return b"", ""
 
-    # 1. Si OPENAI_API_KEY está configurada, usar OpenAI TTS-1 HD
-    openai_key = os.environ.get("OPENAI_API_KEY")
-    if openai_key and (voice.startswith("openai:") or voice in ("alloy", "nova", "echo", "shimmer", "fable", "onyx")):
-        openai_voice = voice.replace("openai:", "").strip() if voice.startswith("openai:") else voice
-        try:
-            url = "https://api.openai.com/v1/audio/speech"
-            headers = {
-                "Authorization": f"Bearer {openai_key}",
-                "Content-Type": "application/json"
-            }
-            body = json.dumps({
-                "model": "tts-1",
-                "voice": openai_voice,
-                "input": clean_text[:4000],
-                "speed": rate
-            }).encode("utf-8")
-            req = urllib.request.Request(url, data=body, headers=headers)
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                return resp.read(), "audio/mpeg"
-        except Exception as e:
-            print(f"[Aviso OpenAI TTS] {e}, usando Microsoft Neural...", file=sys.stderr)
-
-    # 2. Microsoft Neural de alta fidelidad vía edge-tts
+    # Síntesis neuronal de alta fidelidad vía edge-tts (100% gratuita, sin API keys)
     try:
         import asyncio
         import edge_tts
