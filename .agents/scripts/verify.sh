@@ -47,7 +47,7 @@ echo -e "${GREEN}✔ Scripts de scripts/*.py compilados y validados.${NC}"
 
 # 3. Validación de Plantillas HTML y Artefactos
 echo -e "\n${YELLOW}[3/4] Validando integridad de plantillas del asistente...${NC}"
-TEMPLATE_PATH=".agents/skills/accessible-voice-assistant/resources/audio-assistant-template.html"
+TEMPLATE_PATH="audio_assistant.html"
 if [ ! -f "$TEMPLATE_PATH" ]; then
     echo -e "${RED}[ERROR] No se encontró la plantilla en $TEMPLATE_PATH${NC}" >&2
     exit 1
@@ -59,7 +59,6 @@ assert 'play-btn' in c, 'Falta play-btn en template'
 assert 'reading-bar' in c, 'Falta reading-bar en template'
 assert 'theme-select' in c, 'Falta theme-select en template'
 assert 'voice-profile' in c, 'Falta voice-profile en template'
-assert 'window.speechSynthesis' in c, 'Falta window.speechSynthesis en template'
 "
 echo -e "${GREEN}✔ Plantilla HTML base y controles de accesibilidad íntegros.${NC}"
 

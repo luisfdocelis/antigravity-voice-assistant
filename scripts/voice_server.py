@@ -19,9 +19,41 @@ import subprocess
 PORT = 9000
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-def synthesize_speech(text: str, rate: float = 1.0, voice: str = "es-MX-DaliaNeural") -> tuple:
-    """Retorna (bytes_data, content_type) usando síntesis neuronal de alta fidelidad con fallback local."""
-    # 1. Motor neuronal natural de alta fidelidad (Microsoft Neural vía edge-tts)
+def synthesize_speech(text: str, rate: float = 1.0, voice: str = "es-ES-AlvaroNeural") -> tuple:
+    """Retorna (bytes_data, content_type) usando síntesis neuronal de alta fidelidad."""
+    import re
+    # Limpieza exhaustiva: quitar emojis, tags HTML y markdown residual
+    clean_text = re.sub(r"[\U00010000-\U0010ffff]", "", text)
+    clean_text = re.sub(r"<[^>]+>", " ", clean_text)
+    clean_text = re.sub(r"[*`_~#]", "", clean_text)
+    clean_text = re.sub(r"\s+", " ", clean_text).strip()
+
+    if not clean_text:
+        return b"", ""
+
+    # 1. Si OPENAI_API_KEY está configurada, usar OpenAI TTS-1 HD
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    if openai_key and (voice.startswith("openai:") or voice in ("alloy", "nova", "echo", "shimmer", "fable", "onyx")):
+        openai_voice = voice.replace("openai:", "").strip() if voice.startswith("openai:") else voice
+        try:
+            url = "https://api.openai.com/v1/audio/speech"
+            headers = {
+                "Authorization": f"Bearer {openai_key}",
+                "Content-Type": "application/json"
+            }
+            body = json.dumps({
+                "model": "tts-1",
+                "voice": openai_voice,
+                "input": clean_text[:4000],
+                "speed": rate
+            }).encode("utf-8")
+            req = urllib.request.Request(url, data=body, headers=headers)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return resp.read(), "audio/mpeg"
+        except Exception as e:
+            print(f"[Aviso OpenAI TTS] {e}, usando Microsoft Neural...", file=sys.stderr)
+
+    # 2. Microsoft Neural de alta fidelidad vía edge-tts
     try:
         import asyncio
         import edge_tts
@@ -30,8 +62,10 @@ def synthesize_speech(text: str, rate: float = 1.0, voice: str = "es-MX-DaliaNeu
         rate_int = int((rate - 1.0) * 100)
         rate_str = f"{rate_int:+d}%"
 
+        target_voice = voice if "-" in voice else "es-ES-AlvaroNeural"
+
         async def run_edge():
-            comm = edge_tts.Communicate(text, voice, rate=rate_str)
+            comm = edge_tts.Communicate(clean_text, target_voice, rate=rate_str)
             await comm.save(tmp_file)
 
         asyncio.run(run_edge())
@@ -44,27 +78,15 @@ def synthesize_speech(text: str, rate: float = 1.0, voice: str = "es-MX-DaliaNeu
                 pass
             return data, "audio/mpeg"
     except Exception as e:
-        print(f"[Aviso Neural TTS] {e}, usando motor local...", file=sys.stderr)
-
-    # 2. Fallback local: espeak-ng en español latino
-    fd, tmp_file = tempfile.mkstemp(suffix=".wav", prefix="antigravity_espeak_")
-    os.close(fd)
-    try:
-        speed_val = max(80, min(350, int(160 * rate)))
-        cmd = ["espeak-ng", "-v", "es-la", "-s", str(speed_val), "-w", tmp_file, text]
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-        with open(tmp_file, "rb") as f:
-            data = f.read()
-        return data, "audio/wav"
-    except Exception as e:
-        print(f"[Error Fallback TTS] {e}", file=sys.stderr)
-        return b"", ""
+        print(f"[Error Neural TTS] {e}", file=sys.stderr)
     finally:
-        if os.path.exists(tmp_file):
+        if 'tmp_file' in locals() and os.path.exists(tmp_file):
             try:
                 os.remove(tmp_file)
             except Exception:
                 pass
+
+    return b"", ""
 
 class VoiceRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -109,16 +131,18 @@ class VoiceRequestHandler(http.server.SimpleHTTPRequestHandler):
                 return
 
             voice_map = {
-                "dalia": "es-MX-DaliaNeural",
-                "jorge": "es-MX-JorgeNeural",
                 "alvaro": "es-ES-AlvaroNeural",
+                "salome": "es-CO-SalomeNeural",
+                "jorge": "es-MX-JorgeNeural",
+                "paloma": "es-US-PalomaNeural",
+                "dalia": "es-MX-DaliaNeural",
                 "elvira": "es-ES-ElviraNeural",
-                "natural": "es-MX-DaliaNeural",
-                "clear": "es-ES-AlvaroNeural",
-                "calm": "es-ES-ElviraNeural",
+                "natural": "es-ES-AlvaroNeural",
+                "clear": "es-CO-SalomeNeural",
+                "calm": "es-US-PalomaNeural",
                 "deep": "es-MX-JorgeNeural"
             }
-            target_voice = voice_param if voice_param else voice_map.get(profile, "es-MX-DaliaNeural")
+            target_voice = voice_param if voice_param else voice_map.get(profile, "es-ES-AlvaroNeural")
 
             data, content_type = synthesize_speech(text=text, rate=rate, voice=target_voice)
             if not data:

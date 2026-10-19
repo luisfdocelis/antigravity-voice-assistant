@@ -697,14 +697,15 @@
         </select>
       </div>
 
-      <!-- 6. Perfiles de Voz con Tonos Notables -->
-      <div class="setting-item">
-        <label>🎙️ Tipo de Voz</label>
+      <!-- 6. Perfiles de Voz Neural de Alta Claridad -->
+      <div class="setting-item" style="grid-column: span 2;">
+        <label>🎙️ Voz y Narrador (Humano / Comprensible)</label>
         <select id="voice-profile" onchange="setVoiceProfile(this.value)">
-          <option value="natural" selected>Natural</option>
-          <option value="deep">Grave / Profunda</option>
-          <option value="clear">Clara / Aguda</option>
-          <option value="calm">Pausada</option>
+          <option value="alvaro" selected>Álvaro (España - Narrador Profesional, Máxima Claridad)</option>
+          <option value="salome">Salomé (Colombia - Cálida y Expresiva)</option>
+          <option value="jorge">Jorge (México - Masculina Natural)</option>
+          <option value="paloma">Paloma (EE.UU. - Conversacional)</option>
+          <option value="dalia">Dalia (México - Femenina Estándar)</option>
         </select>
       </div>
 
@@ -860,56 +861,55 @@ Hemos transformado el plugin en una extensión nativa completa (`.vsix`) para An
     return out.join("\n");
   }
 
-  // --- 1. Diccionario Fonético para Desarrolladores ---
+  // --- 1. Normalización Natural para Síntesis Neural de Alta Claridad ---
   function applyDevPronunciationLexicon(text) {
     if (!text) return "";
     let t = text;
 
+    // Quitar emojis que distorsionan la síntesis
+    t = t.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, " ");
+
     // Bloques de código multilínea: anunciar brevemente
     t = t.replace(/```[a-zA-Z0-9_-]*\n([\s\S]*?)```/g, ". Bloque de código omitido para agilidad auditiva. ");
 
-    // Operadores lógicos y de comparación
+    // Expandir atajos y etiquetas amigables
+    t = t.replace(/<kbd>([^<]+)<\/kbd>/gi, " $1 ");
+    t = t.replace(/\bCtrl\+/gi, "Control ");
+    t = t.replace(/\bAlt\+/gi, "Alt ");
+    t = t.replace(/\bShift\+/gi, "Shift ");
+
+    // Quitar cualquier etiqueta HTML residual (<...>)
+    t = t.replace(/<[^>]+>/g, " ");
+
+    // Operadores
     t = t.replace(/===/g, " estrictamente igual a ");
-    t = t.replace(/!==/g, " estrictamente diferente de ");
+    t = t.replace(/!==/g, " diferente de ");
     t = t.replace(/!=/g, " diferente de ");
     t = t.replace(/==/g, " igual a ");
-    t = t.replace(/=>/g, " función flecha ");
+    t = t.replace(/=>/g, " flecha ");
     t = t.replace(/->/g, " retorna ");
-    t = t.replace(/&&/g, " y además ");
-    t = t.replace(/\|\|/g, " o bien ");
+    t = t.replace(/&&/g, " y ");
+    t = t.replace(/\|\|/g, " o ");
 
-    // Términos técnicos, herramientas y acrónimos dev
+    // Acrónimos que requieren lectura deletreada limpia
     const lexicon = [
-      [/\bJSON\b/gi, "yeison"],
-      [/\bAPIs\b/gi, "ápis"],
-      [/\bAPI\b/gi, "ápi"],
-      [/\bCLIs\b/gi, "ce-ele-ís"],
-      [/\bCLI\b/gi, "ce-ele-í"],
-      [/\bSQL\b/gi, "ese-cu-ele"],
-      [/\bregex\b/gi, "reg-ex"],
-      [/\basync\s*\/\s*await\b/gi, "eisinck y e-güeit"],
-      [/\basync\b/gi, "eisinck"],
-      [/\bawait\b/gi, "e-güeit"],
-      [/\bpytest\b/gi, "pai-test"],
-      [/\bPython\b/gi, "paiton"],
+      [/\bAPIs\b/g, "A P Is"],
+      [/\bAPI\b/g, "A P I"],
+      [/\bCLIs\b/g, "C L Is"],
+      [/\bCLI\b/g, "C L I"],
+      [/\bSQL\b/g, "S Q L"],
       [/\bPRs\b/gi, "pull requests"],
       [/\bPR\b/gi, "pull request"],
-      [/\bGitHub\b/gi, "guit-jab"],
-      [/\bGit\b/gi, "guit"],
-      [/\bnpm\b/gi, "ene-pe-eme"],
-      [/\bpip\b/gi, "pip"],
-      [/\bkubectl\b/gi, "cube-control"],
-      [/\bfrontend\b/gi, "front-end"],
-      [/\bbackend\b/gi, "back-end"],
-      [/\bUUID\b/gi, "u-u-i-de"],
-      [/\bGraphQL\b/gi, "graf-cu-ele"],
-      [/\bOAuth\b/gi, "o-ot"],
-      [/\bJWT\b/gi, "yei-doble-ve-te"]
+      [/\bUUID\b/gi, "U U I D"],
+      [/\bJWT\b/gi, "J W T"],
+      [/\bOAuth\b/gi, "O Auth"],
+      [/\bkubectl\b/gi, "kube control"]
     ];
 
     for (const [pattern, replacement] of lexicon) {
       t = t.replace(pattern, replacement);
     }
+    t = t.replace(/\s+/g, " ").trim();
     return t;
   }
 
@@ -1004,7 +1004,7 @@ Hemos transformado el plugin en una extensión nativa completa (`.vsix`) para An
   let currentVolume = 1.0;
   let previousVolume = 1.0;
   let currentRate = 1.0;
-  let currentVoiceProfile = "natural";
+  let currentVoiceProfile = "alvaro";
   let selectedVoiceUri = "";
   let progressInterval = null;
   let currentUtterance = null;
