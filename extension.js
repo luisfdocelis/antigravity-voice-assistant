@@ -1,292 +1,159 @@
 // ==============================================================================
-// Antigravity Voice Assistant — Native IDE Extension
-// Integración nativa de voz, accesibilidad y dictado para Antigravity IDE / VS Code
+// Antigravity Voice Assistant — Clean Native IDE Extension
+// Integración de voz para el prompt y chat de Antigravity IDE
 // ==============================================================================
 
 const vscode = require('vscode');
 const path = require('path');
 const fs = require('fs');
-const http = require('http');
-const { spawn, exec } = require('child_process');
+const { spawn } = require('child_process');
 
-let serverProcess = null;
-let dictationStatusBarItem = null;
-let playerStatusBarItem = null;
-let currentWebviewView = null;
-let activeAudioProcess = null;
+let dictateStatusBarItem = null;
+let readStatusBarItem = null;
+let stopStatusBarItem = null;
+let currentAudioPanel = null;
+let activeEngineProcess = null;
+let lastSpokenText = '';
 
 /**
  * Activa la extensión en Antigravity IDE
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-  console.log('[Antigravity Voice] Extensión activada exitosamente.');
+  console.log('[Antigravity Voice] Extensión activada desde cero.');
 
   const extensionRoot = context.extensionPath;
-  const scriptsDir = path.join(extensionRoot, 'scripts');
-  const serverScript = path.join(scriptsDir, 'voice_server.py');
-  const sttScript = path.join(scriptsDir, 'voice_stt.py');
-  const ttsScript = path.join(scriptsDir, 'voice_tts.py');
-  const podcastScript = path.join(scriptsDir, 'voice_podcast.py');
+  const engineScript = path.join(extensionRoot, 'scripts', 'voice_engine.py');
 
-  // --- 1. Inicializar Barra de Estado (Status Bar) ---
-  dictationStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 101);
-  dictationStatusBarItem.command = 'antigravity-voice.dictate';
-  dictationStatusBarItem.text = '$(mic) Dictar';
-  dictationStatusBarItem.tooltip = 'Antigravity Voice: Dictar por voz con micrófono (Ctrl+Alt+D)';
-  dictationStatusBarItem.show();
-  context.subscriptions.push(dictationStatusBarItem);
+  // --- 1. Botón: Dictar Prompt (Ctrl+Alt+D) ---
+  dictateStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 102);
+  dictateStatusBarItem.command = 'antigravity-voice.dictatePrompt';
+  dictateStatusBarItem.text = '$(mic) Dictar Prompt';
+  dictateStatusBarItem.tooltip = 'Habla para escribir o refinar un prompt en el chat de Antigravity (Ctrl+Alt+D)';
+  dictateStatusBarItem.show();
+  context.subscriptions.push(dictateStatusBarItem);
 
-  playerStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-  playerStatusBarItem.command = 'antigravity-voice.openPlayer';
-  playerStatusBarItem.text = '$(unmute) Antigravity Voice';
-  playerStatusBarItem.tooltip = 'Abrir reproductor accesible en barra lateral';
-  playerStatusBarItem.show();
-  context.subscriptions.push(playerStatusBarItem);
+  // --- 2. Botón: Leer Respuesta (Ctrl+Alt+R) ---
+  readStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 101);
+  readStatusBarItem.command = 'antigravity-voice.readResponse';
+  readStatusBarItem.text = '$(unmute) Leer Respuesta';
+  readStatusBarItem.tooltip = 'Lee en voz alta la respuesta del chat o el texto seleccionado (Ctrl+Alt+R)';
+  readStatusBarItem.show();
+  context.subscriptions.push(readStatusBarItem);
 
-  // --- 2. Iniciar / Asegurar Servidor Local en Puerto 9000 ---
-  ensureVoiceServerRunning(serverScript);
+  // --- 3. Botón: Detener Audio (Ctrl+Alt+S) ---
+  stopStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+  stopStatusBarItem.command = 'antigravity-voice.stopAudio';
+  stopStatusBarItem.text = '$(mute) Detener';
+  stopStatusBarItem.tooltip = 'Detener reproducción de audio actual (Ctrl+Alt+S)';
+  stopStatusBarItem.hide();
+  context.subscriptions.push(stopStatusBarItem);
 
-  // --- 3. Registrar Proveedor de Vista en la Barra Lateral (Webview View) ---
-  const sidebarProvider = new VoiceAssistantViewProvider(context.extensionUri, extensionRoot);
+  // --- 4. Registrar Comandos ---
+
+  // Comando: Dictar Prompt
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('antigravity-voice.assistantView', sidebarProvider, {
-      webviewOptions: { retainContextWhenHidden: true }
+    vscode.commands.registerCommand('antigravity-voice.dictatePrompt', async () => {
+      await handleDictatePrompt(engineScript);
     })
   );
 
-  // --- 4. Comando: Dictar por Voz (Micrófono) ---
-  const dictateCmd = vscode.commands.registerCommand('antigravity-voice.dictate', async () => {
-    await handleVoiceDictation(sttScript);
-  });
-  context.subscriptions.push(dictateCmd);
+  // Comando: Leer Respuesta o Selección
+  context.subscriptions.push(
+    vscode.commands.registerCommand('antigravity-voice.readResponse', async () => {
+      await handleReadResponse(context, engineScript);
+    })
+  );
 
-  // --- 5. Comando: Leer Selección de Código en Voz Alta ---
-  const readSelectionCmd = vscode.commands.registerCommand('antigravity-voice.readSelection', async () => {
-    const editor = vscode.window.activeTextEditor;
-    let textToRead = '';
-    if (editor && !editor.selection.isEmpty) {
-      textToRead = editor.document.getText(editor.selection);
-    } else if (editor) {
-      textToRead = editor.document.lineAt(editor.selection.active.line).text;
-    }
-
-    if (!textToRead || textToRead.trim().length === 0) {
-      vscode.window.showInformationMessage('Selecciona código o texto para leer en voz alta.');
-      return;
-    }
-
-    await speakText(textToRead, ttsScript);
-  });
-  context.subscriptions.push(readSelectionCmd);
-
-  // --- 6. Comando: Detener Audio ---
-  const stopAudioCmd = vscode.commands.registerCommand('antigravity-voice.stopAudio', () => {
-    stopActiveAudio();
-    if (currentWebviewView) {
-      currentWebviewView.webview.postMessage({ command: 'stop' });
-    }
-    vscode.window.setStatusBarMessage('$(mute) Audio detenido', 2500);
-  });
-  context.subscriptions.push(stopAudioCmd);
-
-  // --- 7. Comando: Abrir Reproductor Accesible ---
-  const openPlayerCmd = vscode.commands.registerCommand('antigravity-voice.openPlayer', () => {
-    vscode.commands.executeCommand('antigravity-voice.assistantView.focus');
-  });
-  context.subscriptions.push(openPlayerCmd);
-
-  // --- 8. Comando: Reiniciar Servidor de Voz ---
-  const restartServerCmd = vscode.commands.registerCommand('antigravity-voice.restartServer', () => {
-    restartVoiceServer(serverScript);
-  });
-  context.subscriptions.push(restartServerCmd);
-
-  // --- 9. Comando: Exportar Markdown a Podcast de Audio ---
-  const exportPodcastCmd = vscode.commands.registerCommand('antigravity-voice.exportPodcast', async (uri) => {
-    const targetUri = uri || (vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.uri : null);
-    if (!targetUri || !targetUri.fsPath.endsWith('.md')) {
-      vscode.window.showErrorMessage('Selecciona un archivo Markdown (.md) para exportar como podcast.');
-      return;
-    }
-    await exportPodcast(targetUri.fsPath, podcastScript);
-  });
-  context.subscriptions.push(exportPodcastCmd);
-
-  // --- 10. Participante de Chat (@voice) en el Prompt de Antigravity IDE ---
-  try {
-    if (vscode.chat && typeof vscode.chat.createChatParticipant === 'function') {
-      const participant = vscode.chat.createChatParticipant('antigravity.voice', async (request, chatContext, response, token) => {
-        const artifactPath = path.join(extensionRoot, 'audio_assistant.html');
-        response.markdown(`<agent-embed src="file://${artifactPath}"></agent-embed>\n\n`);
-        response.markdown(`## 🎙️ Antigravity Voice Assistant\n\nHas consultado: *"${request.prompt}"*\n\nPulsa **▶** en el reproductor de arriba para escuchar la respuesta con la voz neuronal humana.`);
-      });
-      context.subscriptions.push(participant);
-      console.log('[Antigravity Voice] Participante @voice registrado en el chat prompt.');
-    }
-  } catch (chatErr) {
-    console.log('[Antigravity Voice] Chat Participant no soportado en esta versión:', chatErr.message);
-  }
+  // Comando: Detener Audio
+  context.subscriptions.push(
+    vscode.commands.registerCommand('antigravity-voice.stopAudio', () => {
+      stopCurrentAudio();
+    })
+  );
 }
 
 /**
- * Proveedor de Webview para la Barra Lateral
+ * Maneja la captura de micrófono y la inyección directa en el prompt del chat
  */
-class VoiceAssistantViewProvider {
-  constructor(extensionUri, extensionRoot) {
-    this._extensionUri = extensionUri;
-    this._extensionRoot = extensionRoot;
+async function handleDictatePrompt(engineScript) {
+  if (!fs.existsSync(engineScript)) {
+    vscode.window.showErrorMessage('No se encontró scripts/voice_engine.py');
+    return;
   }
 
-  resolveWebviewView(webviewView) {
-    currentWebviewView = webviewView;
-    webviewView.webview.options = {
-      enableScripts: true,
-      localResourceRoots: [this._extensionUri]
-    };
+  const config = vscode.workspace.getConfiguration('antigravityVoice');
+  const duration = config.get('dictateDuration', 5);
+  const lang = config.get('language', 'es-ES');
 
-    const htmlPath = path.join(this._extensionRoot, 'configuration.html');
-    let htmlContent = '';
-    try {
-      if (fs.existsSync(htmlPath)) {
-        htmlContent = fs.readFileSync(htmlPath, 'utf8');
-      } else {
-        htmlContent = '<h2>Error: No se encontró configuration.html</h2>';
-      }
-    } catch (err) {
-      htmlContent = `<h2>Error al cargar configuración: ${err.message}</h2>`;
-    }
-
-    webviewView.webview.html = htmlContent;
-
-    // Manejar mensajes desde el Webview hacia el Host de la Extensión
-    webviewView.webview.onDidReceiveMessage(async (message) => {
-      switch (message.command) {
-        case 'startDictation':
-          await vscode.commands.executeCommand('antigravity-voice.dictate');
-          break;
-        case 'speakText':
-          if (message.text) {
-            await speakText(message.text, path.join(this._extensionRoot, 'scripts', 'voice_tts.py'));
-          }
-          break;
-        case 'stopAudio':
-          vscode.commands.executeCommand('antigravity-voice.stopAudio');
-          break;
-      }
-    });
-  }
-}
-
-/**
- * Verifica si el servidor en puerto 9000 está activo; si no, lo inicia
- */
-function ensureVoiceServerRunning(serverScript) {
-  const req = http.get('http://localhost:9000/api/health', (res) => {
-    if (res.statusCode === 200) {
-      console.log('[Antigravity Voice] Servidor local ya está activo en puerto 9000.');
-    } else {
-      spawnVoiceServer(serverScript);
-    }
-  });
-
-  req.on('error', () => {
-    console.log('[Antigravity Voice] Iniciando servidor local en segundo plano...');
-    spawnVoiceServer(serverScript);
-  });
-
-  req.setTimeout(1500, () => {
-    req.destroy();
-    spawnVoiceServer(serverScript);
-  });
-}
-
-/**
- * Lanza el proceso de scripts/voice_server.py
- */
-function spawnVoiceServer(serverScript) {
-  if (!fs.existsSync(serverScript)) return;
-  try {
-    serverProcess = spawn('python3', [serverScript], {
-      detached: true,
-      stdio: 'ignore'
-    });
-    serverProcess.unref();
-    console.log('[Antigravity Voice] Servidor voice_server.py iniciado con PID:', serverProcess.pid);
-  } catch (err) {
-    console.warn('[Antigravity Voice] No se pudo lanzar voice_server.py:', err.message);
-  }
-}
-
-/**
- * Reinicia el servidor local
- */
-function restartVoiceServer(serverScript) {
-  if (serverProcess) {
-    try {
-      process.kill(-serverProcess.pid);
-    } catch (_) {}
-    serverProcess = null;
-  }
-  spawnVoiceServer(serverScript);
-  vscode.window.showInformationMessage('🎙️ Servidor de voz reiniciado en http://localhost:9000');
-}
-
-/**
- * Maneja la captura y transcripción de voz (STT) y la inserta en el editor activo
- */
-async function handleVoiceDictation(sttScript) {
-  const duration = 5;
-  dictationStatusBarItem.text = '$(record~spin) Grabando (5s)...';
-  dictationStatusBarItem.color = '#ef4444';
+  dictateStatusBarItem.text = '$(record~spin) Escuchando... habla ahora';
+  dictateStatusBarItem.color = '#ef4444';
 
   const progressOptions = {
     location: vscode.ProgressLocation.Notification,
-    title: '🎙️ Antigravity Voice: Grabando micrófono...',
-    cancellable: false
+    title: '🎙️ Antigravity Voice: Escuchando micrófono...',
+    cancellable: true
   };
 
-  await vscode.window.withProgress(progressOptions, async (progress) => {
-    progress.report({ increment: 0, message: 'Habla ahora con tu micrófono de Windows...' });
+  await vscode.window.withProgress(progressOptions, async (progress, token) => {
+    progress.report({ increment: 0, message: `Habla ahora (${duration} segundos)...` });
 
     return new Promise((resolve) => {
-      const child = spawn('python3', [sttScript, '--record', '--duration', String(duration)]);
+      let cancelled = false;
+      token.onCancellationRequested(() => {
+        cancelled = true;
+        if (activeEngineProcess) {
+          activeEngineProcess.kill();
+          activeEngineProcess = null;
+        }
+        resetDictateButton();
+        resolve();
+      });
+
+      const args = [engineScript, '--dictate', '--duration', String(duration), '--lang', lang];
+      const proc = spawn('python3', args, { env: process.env });
+      activeEngineProcess = proc;
+
       let stdout = '';
       let stderr = '';
 
-      child.stdout.on('data', (d) => { stdout += d.toString(); });
-      child.stderr.on('data', (d) => { stderr += d.toString(); });
+      proc.stdout.on('data', (d) => { stdout += d.toString(); });
+      proc.stderr.on('data', (d) => { stderr += d.toString(); });
 
-      child.on('close', async (code) => {
-        dictationStatusBarItem.text = '$(mic) Dictar';
-        dictationStatusBarItem.color = undefined;
+      proc.on('close', async (code) => {
+        activeEngineProcess = null;
+        resetDictateButton();
 
-        const recognizedText = stdout.trim();
-        if (code === 0 && recognizedText) {
-          // 1. Insertar directamente en el editor activo si existe
-          const editor = vscode.window.activeTextEditor;
-          if (editor) {
-            editor.edit((editBuilder) => {
-              editBuilder.insert(editor.selection.active, recognizedText + ' ');
+        if (cancelled) return resolve();
+
+        try {
+          const result = JSON.parse(stdout.trim());
+          if (result.success && result.text) {
+            const transcribed = result.text.trim();
+
+            // INYECCIÓN DIRECTA EN EL PROMPT DEL CHAT DE ANTIGRAVITY
+            // isPartialQuery: true coloca el texto en la caja de prompt sin enviarlo de inmediato
+            // permitiendo al usuario refinarlo o presionar Enter para enviar.
+            await vscode.commands.executeCommand('workbench.action.chat.open', {
+              query: transcribed,
+              isPartialQuery: true
             });
+
+            vscode.window.showInformationMessage(`🎙️ Prompt reconocido: "${transcribed}"`);
+          } else {
+            const errMsg = result.error || stderr || 'No se reconoció voz clara.';
+            vscode.window.showWarningMessage(`🎙️ ${errMsg}`);
           }
-
-          // 2. Copiar al portapapeles
-          await vscode.env.clipboard.writeText(recognizedText);
-
-          // 3. Notificar al usuario
-          vscode.window.showInformationMessage(`✓ Dictado: "${recognizedText}" (Copiado al portapapeles)`);
-
-          // 4. Si el Webview está abierto, actualizarlo
-          if (currentWebviewView) {
-            currentWebviewView.webview.postMessage({
-              command: 'transcription',
-              text: recognizedText
-            });
-          }
-        } else {
-          vscode.window.showWarningMessage('No se detectó audio audible. Asegúrate de hablar cerca de tu micrófono.');
+        } catch (e) {
+          vscode.window.showWarningMessage(`🎙️ No se pudo procesar la voz: ${stdout || stderr || e.message}`);
         }
+        resolve();
+      });
+
+      proc.on('error', (err) => {
+        activeEngineProcess = null;
+        resetDictateButton();
+        vscode.window.showErrorMessage(`Error ejecutando motor de voz: ${err.message}`);
         resolve();
       });
     });
@@ -294,56 +161,179 @@ async function handleVoiceDictation(sttScript) {
 }
 
 /**
- * Reproduce texto en voz alta con la voz neuronal
+ * Restaura el estado visual del botón de dictado
  */
-async function speakText(text, ttsScript) {
-  stopActiveAudio();
-  vscode.window.setStatusBarMessage('$(unmute~spin) Reproduciendo con Voz Neural...', 4000);
-
-  // Intentar primero reproducir por el servidor local de alta fidelidad si está disponible
-  const encoded = encodeURIComponent(text);
-  const audioUrl = `http://localhost:9000/api/tts?profile=natural&text=${encoded}`;
-
-  // En Linux/WSL intentamos enviar el audio a los altavoces de Windows si está disponible
-  try {
-    activeAudioProcess = spawn('python3', [ttsScript, text, '--engine', 'native']);
-  } catch (_) {}
-}
-
-/**
- * Detiene el audio activo
- */
-function stopActiveAudio() {
-  if (activeAudioProcess) {
-    try {
-      activeAudioProcess.kill();
-    } catch (_) {}
-    activeAudioProcess = null;
+function resetDictateButton() {
+  if (dictateStatusBarItem) {
+    dictateStatusBarItem.text = '$(mic) Dictar Prompt';
+    dictateStatusBarItem.color = undefined;
   }
 }
 
 /**
- * Exporta un archivo Markdown como Podcast
+ * Lee la respuesta actual del chat, el texto seleccionado o el portapapeles
  */
-async function exportPodcast(filePath, podcastScript) {
-  vscode.window.showInformationMessage('🎙️ Generando podcast en audio desde Markdown...');
-  const child = spawn('python3', [podcastScript, filePath]);
-  child.on('close', (code) => {
-    if (code === 0) {
-      vscode.window.showInformationMessage('✓ Podcast de audio generado exitosamente en carpeta dist/podcasts');
-    } else {
-      vscode.window.showErrorMessage('Error al generar el podcast de audio.');
+async function handleReadResponse(context, engineScript) {
+  let textToSpeak = '';
+
+  // 1. Si hay texto seleccionado en el editor activo
+  const editor = vscode.window.activeTextEditor;
+  if (editor && !editor.selection.isEmpty) {
+    textToSpeak = editor.document.getText(editor.selection).trim();
+  }
+
+  // 2. Si no hay selección, leer del portapapeles
+  if (!textToSpeak) {
+    try {
+      const clipboard = await vscode.env.clipboard.readText();
+      if (clipboard && clipboard.trim().length > 3) {
+        textToSpeak = clipboard.trim();
+      }
+    } catch (_) {}
+  }
+
+  // 3. Si aún no hay texto, pedirlo al usuario
+  if (!textToSpeak) {
+    const input = await vscode.window.showInputBox({
+      prompt: 'Ingresa o pega el texto de Antigravity que deseas escuchar:',
+      placeHolder: 'Texto para síntesis de voz neural...'
+    });
+    if (!input) return;
+    textToSpeak = input.trim();
+  }
+
+  lastSpokenText = textToSpeak;
+  const config = vscode.workspace.getConfiguration('antigravityVoice');
+  const voice = config.get('voice', 'es-ES-AlvaroNeural');
+  const rate = config.get('rate', 1.0);
+
+  readStatusBarItem.text = '$(sound-max) Sintetizando...';
+  stopStatusBarItem.show();
+
+  const tmpMp3 = path.join(context.extensionPath, 'scripts', 'temp_playback.mp3');
+
+  const args = [engineScript, '--speak', textToSpeak, '--voice', voice, '--rate', String(rate), '--output', tmpMp3];
+  const proc = spawn('python3', args, { env: process.env });
+  activeEngineProcess = proc;
+
+  let stdout = '';
+  let stderr = '';
+
+  proc.stdout.on('data', (d) => { stdout += d.toString(); });
+  proc.stderr.on('data', (d) => { stderr += d.toString(); });
+
+  proc.on('close', (code) => {
+    activeEngineProcess = null;
+
+    if (code !== 0 || !fs.existsSync(tmpMp3)) {
+      readStatusBarItem.text = '$(unmute) Leer Respuesta';
+      stopStatusBarItem.hide();
+      vscode.window.showErrorMessage(`Error al generar voz neural: ${stderr || stdout}`);
+      return;
     }
+
+    // Reproducir a través de un Webview de audio nativo en Electron
+    playAudioInWebview(context, tmpMp3);
   });
 }
 
-function deactivate() {
-  if (serverProcess) {
-    try {
-      serverProcess.kill();
-    } catch (_) {}
+/**
+ * Reproduce el archivo MP3 generado a través de un panel Webview nativo en Electron
+ */
+function playAudioInWebview(context, mp3Path) {
+  readStatusBarItem.text = '$(sound-max) Reproduciendo...';
+
+  if (currentAudioPanel) {
+    currentAudioPanel.dispose();
   }
-  stopActiveAudio();
+
+  currentAudioPanel = vscode.window.createWebviewPanel(
+    'antigravityAudioPlayer',
+    'Antigravity Voice Player',
+    { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
+    { enableScripts: true, localResourceRoots: [vscode.Uri.file(path.dirname(mp3Path))] }
+  );
+
+  const fileUri = currentAudioPanel.webview.asWebviewUri(vscode.Uri.file(mp3Path));
+
+  currentAudioPanel.webview.html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        body {
+          background-color: #0b1120;
+          color: #ffffff;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          margin: 0;
+          padding: 20px;
+          box-sizing: border-box;
+          text-align: center;
+        }
+        .card {
+          background: #1e293b;
+          border: 1px solid #38bdf8;
+          border-radius: 12px;
+          padding: 24px;
+          max-width: 480px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        h2 { color: #38bdf8; margin-top: 0; font-size: 1.2rem; }
+        p { color: #facc15; font-size: 0.95rem; margin-bottom: 16px; }
+        audio { width: 100%; border-radius: 8px; outline: none; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <h2>🔊 Antigravity Voice Assistant</h2>
+        <p>Reproduciendo respuesta con voz neuronal Álvaro...</p>
+        <audio src="${fileUri}" autoplay controls></audio>
+      </div>
+      <script>
+        const audio = document.querySelector('audio');
+        audio.addEventListener('ended', () => {
+          // Finalizó la reproducción
+        });
+      </script>
+    </body>
+    </html>
+  `;
+
+  currentAudioPanel.onDidDispose(() => {
+    currentAudioPanel = null;
+    readStatusBarItem.text = '$(unmute) Leer Respuesta';
+    stopStatusBarItem.hide();
+  });
+}
+
+/**
+ * Detiene la reproducción actual de audio
+ */
+function stopCurrentAudio() {
+  if (currentAudioPanel) {
+    currentAudioPanel.dispose();
+    currentAudioPanel = null;
+  }
+  if (activeEngineProcess) {
+    activeEngineProcess.kill();
+    activeEngineProcess = null;
+  }
+  readStatusBarItem.text = '$(unmute) Leer Respuesta';
+  stopStatusBarItem.hide();
+  vscode.window.showInformationMessage('Audio detenido.');
+}
+
+/**
+ * Desactiva la extensión
+ */
+function deactivate() {
+  stopCurrentAudio();
 }
 
 module.exports = {

@@ -1,1868 +1,326 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="night">
 <head>
-<meta charset="UTF-8">
-<style>
-  :root, [data-theme="night"] {
-    --player-scale: 1;
-    --player-opacity: 100%;
-    --player-font-size: 16px;
-    --player-bg: #1e293b;
-    --player-text: #ffffff;
-    --player-subtext: #facc15;
-    --player-accent: #38bdf8;
-    --player-track: #475569;
-    --player-bar: #facc15;
-  }
-  [data-theme="dracula"] {
-    --player-bg: #282a36;
-    --player-text: #ffffff;
-    --player-subtext: #50fa7b;
-    --player-accent: #ff79c6;
-    --player-track: #44475a;
-    --player-bar: #bd93f9;
-  }
-  [data-theme="synthwave"] {
-    --player-bg: #1a103c;
-    --player-text: #ffffff;
-    --player-subtext: #f3cc30;
-    --player-accent: #e779c1;
-    --player-track: #2d1b69;
-    --player-bar: #58c7f3;
-  }
-  [data-theme="luxury"] {
-    --player-bg: #09090b;
-    --player-text: #ffffff;
-    --player-subtext: #fde047;
-    --player-accent: #dca54c;
-    --player-track: #27272a;
-    --player-bar: #dca54c;
-  }
-  [data-theme="forest"] {
-    --player-bg: #171212;
-    --player-text: #ffffff;
-    --player-subtext: #1eb854;
-    --player-accent: #1db88e;
-    --player-track: #261f1f;
-    --player-bar: #1eb854;
-  }
-  [data-theme="aqua"] {
-    --player-bg: #193549;
-    --player-text: #ffffff;
-    --player-subtext: #ffe999;
-    --player-accent: #09ecf3;
-    --player-track: #234b66;
-    --player-bar: #09ecf3;
-  }
-  [data-theme="cyberpunk"] {
-    --player-bg: #1a1800;
-    --player-text: #ffffff;
-    --player-subtext: #00f0ff;
-    --player-accent: #ffee00;
-    --player-track: #332f00;
-    --player-bar: #ff00a0;
-  }
-  [data-theme="coffee"] {
-    --player-bg: #20161f;
-    --player-text: #ffffff;
-    --player-subtext: #db924b;
-    --player-accent: #10576d;
-    --player-track: #332431;
-    --player-bar: #db924b;
-  }
-  [data-theme="emerald"] {
-    --player-bg: #ffffff;
-    --player-text: #0f172a;
-    --player-subtext: #047857;
-    --player-accent: #1d4ed8;
-    --player-track: #cbd5e1;
-    --player-bar: #047857;
-  }
-  [data-theme="nord"] {
-    --player-bg: #2e3440;
-    --player-text: #eceff4;
-    --player-subtext: #88c0d0;
-    --player-accent: #81a1c1;
-    --player-track: #4c566a;
-    --player-bar: #88c0d0;
-  }
-  [data-theme="dim"] {
-    --player-bg: #1c2128;
-    --player-text: #adbac7;
-    --player-subtext: #6cb6ff;
-    --player-accent: #316dca;
-    --player-track: #373e47;
-    --player-bar: #539bf5;
-  }
-  [data-theme="sunset"] {
-    --player-bg: #181424;
-    --player-text: #f3f4f6;
-    --player-subtext: #fb7185;
-    --player-accent: #f43f5e;
-    --player-track: #2e263d;
-    --player-bar: #fb923c;
-  }
-  [data-theme="black"] {
-    --player-bg: #000000;
-    --player-text: #ffffff;
-    --player-subtext: #a6adbb;
-    --player-accent: #38bdf8;
-    --player-track: #1f2937;
-    --player-bar: #ffffff;
-  }
-  [data-theme="tokyo-night"] {
-    --player-bg: #1a1b26;
-    --player-text: #c0caf5;
-    --player-subtext: #7aa2f7;
-    --player-accent: #bb9af7;
-    --player-track: #292e42;
-    --player-bar: #7dcfff;
-  }
-  [data-theme="monokai"] {
-    --player-bg: #272822;
-    --player-text: #f8f8f2;
-    --player-subtext: #a6e22e;
-    --player-accent: #f92672;
-    --player-track: #3e3d32;
-    --player-bar: #fd971f;
-  }
-  [data-theme="solarized-dark"] {
-    --player-bg: #002b36;
-    --player-text: #839496;
-    --player-subtext: #b58900;
-    --player-accent: #268bd2;
-    --player-track: #073642;
-    --player-bar: #2aa198;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: transparent;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    padding: 6px;
-    display: flex;
-    justify-content: center;
-  }
-
-  .player-card {
-    background: color-mix(in srgb, var(--player-bg) var(--player-opacity), transparent);
-    backdrop-filter: blur(10px);
-    width: calc(100% * var(--player-scale));
-    max-width: calc(650px * var(--player-scale));
-    min-width: 290px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    overflow: hidden;
-    position: relative;
-    border: 1px solid rgba(255,255,255,0.15);
-    transition: width 0.1s ease, max-width 0.1s ease;
-  }
-  .player-content {
-    padding: 12px 16px 10px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .top-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .meta-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-  }
-  .avatar {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #0284c7, #38bdf8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    border: 2px solid var(--player-accent);
-  }
-  .info {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-  .info-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--player-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .info-subtitle {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--player-subtext);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .right-actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-  .badge-btn {
-    background: rgba(255,255,255,0.1);
-    color: var(--player-text);
-    border: none;
-    border-radius: 20px;
-    padding: 4px 9px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    white-space: nowrap;
-  }
-  .badge-btn:hover { background: rgba(255,255,255,0.2); }
-  .power-btn {
-    background: none;
-    border: none;
-    color: var(--player-subtext);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .power-btn:hover { color: #ef4444; }
-
-  /* Segunda Fila: Volumen + Controles Multimedia */
-  .control-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-    /* Control de Volumen: Botón y barra expansible horizontal */
-  .volume-group {
-    display: inline-flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 20px;
-    padding: 2px 6px;
-    gap: 6px;
-  }
-  .vol-btn {
-    background: transparent;
-    border: none;
-    color: var(--player-text);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-  }
-  .vol-btn:hover {
-    color: var(--player-accent);
-  }
-  .vol-slider-wrapper {
-    display: none;
-    align-items: center;
-    width: 90px;
-  }
-  .vol-slider-wrapper.open {
-    display: flex !important;
-  }
-  .slider-track {
-    flex: 1;
-    height: 5px;
-    background: var(--player-track);
-    border-radius: 5px;
-    position: relative;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-  }
-  .slider-fill {
-    height: 100%;
-    background: var(--player-bar);
-    border-radius: 5px;
-    width: 100%;
-  }
-  .slider-thumb {
-    width: 13px;
-    height: 13px;
-    border-radius: 50%;
-    background: var(--player-bar);
-    box-shadow: 0 0 6px rgba(0,0,0,0.5);
-    margin-left: -6px;
-  }
-  .slider-input {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-  }
-
-  .media-buttons {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-  }
-  .ctrl-btn {
-    background: none;
-    border: none;
-    color: var(--player-text);
-    font-size: 18px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2px 4px;
-    border-radius: 6px;
-  }
-  .ctrl-btn:hover { color: var(--player-accent); }
-  .ctrl-btn.play {
-    font-size: 24px;
-    color: var(--player-subtext);
-  }
-
-  /* Barra inferior de progreso continuo */
-  .bottom-progress {
-    width: 100%;
-    height: 4px;
-    background: rgba(255,255,255,0.08);
-    position: relative;
-  }
-  .bottom-progress-bar {
-    height: 100%;
-    background: var(--player-bar);
-    width: 0%;
-    transition: width 0.25s linear;
-  }
-
-  /* Paneles desplegables */
-  .collapsible-drawer {
-    display: none;
-    padding: 12px 16px;
-    background: rgba(0,0,0,0.45);
-    border-top: 1px solid rgba(255,255,255,0.1);
-    font-size: 13px;
-    color: #ffffff;
-  }
-  .collapsible-drawer.open { display: block; }
-  
-  .settings-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-  .setting-item label {
-    font-size: 11px;
-    text-transform: uppercase;
-    color: var(--player-subtext);
-    font-weight: 700;
-    display: block;
-    margin-bottom: 4px;
-  }
-  .setting-item select, .setting-item input[type="range"] {
-    width: 100%;
-    background: #0f172a;
-    border: 1px solid var(--player-accent);
-    color: #ffffff;
-    padding: 3px 6px;
-    border-radius: 6px;
-    font-size: 12px;
-  }
-  .range-box {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .range-val {
-    font-size: 11px;
-    color: var(--player-accent);
-    font-weight: 700;
-    min-width: 36px;
-    text-align: right;
-  }
-  .text-box {
-    margin-top: 6px;
-    line-height: 1.5;
-    font-size: var(--player-font-size);
-    color: var(--player-text);
-    max-height: 150px;
-    overflow-y: auto;
-  }
-  /* Botón de copiar Markdown debajo del cuadro de texto */
-  .text-footer {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-top: 6px;
-    padding: 0 4px;
-  }
-  .icon-copy-btn {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
-    color: var(--player-text);
-    font-size: 16px;
-    padding: 6px 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .icon-copy-btn:hover {
-    background: var(--player-accent);
-    color: #0b1120;
-    border-color: var(--player-accent);
-    transform: scale(1.08);
-  }
-  .icon-copy-btn.copied {
-    background: #10b981;
-    color: #ffffff;
-    border-color: #10b981;
-  }
-  /* Atajos de teclado accesibles */
-  .shortcuts-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px 16px;
-    padding: 6px 0;
-  }
-  .shortcut-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 12px;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  .shortcut-item span {
-    color: var(--player-subtext);
-    font-weight: 500;
-  }
-  kbd {
-    background: #0f172a;
-    border: 1px solid var(--player-accent);
-    color: #ffffff;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 11px;
-    font-weight: 700;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  }
-  /* Botón de micrófono y dictado por voz */
-  .badge-btn.mic-btn.active {
-    background: #ef4444 !important;
-    border-color: #f87171 !important;
-    color: #ffffff !important;
-    animation: mic-pulse 1.5s infinite;
-  }
-  @keyframes mic-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    70% { box-shadow: 0 0 0 7px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-  }
-  .dictation-box {
-    margin-top: 6px;
-    padding: 10px 12px;
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid var(--player-accent);
-    border-radius: 8px;
-    font-size: 14px;
-    color: #ffffff;
-    min-height: 48px;
-    line-height: 1.5;
-  }
-  .command-tag {
-    display: inline-block;
-    background: var(--player-accent);
-    color: #0b1120;
-    font-weight: 700;
-    font-size: 11px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-right: 6px;
-  }
-  .browser-btn {
-    background: #0284c7;
-    color: #ffffff;
-    border: 1px solid #38bdf8;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 6px 12px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-  }
-  .browser-btn:hover {
-    background: #0369a1;
-    border-color: #7dd3fc;
-    transform: translateY(-1px);
-  }
-  .command-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
-  }
-  .chip-btn {
-    background: rgba(56, 189, 248, 0.12);
-    border: 1px solid var(--player-accent);
-    color: #ffffff;
-    border-radius: 6px;
-    padding: 4px 8px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .chip-btn:hover {
-    background: var(--player-accent);
-    color: #0b1120;
-    transform: translateY(-1px);
-  }
-  /* Modo solo iconos */
-  body.mode-icons .btn-lbl {
-    display: none;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Antigravity Voice Assistant</title>
+  <style>
+    :root, [data-theme="night"] {
+      --bg: #0b1120;
+      --card-bg: #1e293b;
+      --text: #ffffff;
+      --subtext: #94a3b8;
+      --accent: #38bdf8;
+      --highlight: #facc15;
+      --border: #334155;
+    }
+    [data-theme="oled"] {
+      --bg: #000000;
+      --card-bg: #09090b;
+      --text: #ffffff;
+      --subtext: #a1a1aa;
+      --accent: #00f0ff;
+      --highlight: #fde047;
+      --border: #27272a;
+    }
+    [data-theme="dracula"] {
+      --bg: #1e1f29;
+      --card-bg: #282a36;
+      --text: #ffffff;
+      --subtext: #6272a4;
+      --accent: #ff79c6;
+      --highlight: #50fa7b;
+      --border: #44475a;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 12px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    .widget-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+    .widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .widget-title {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-badge {
+      font-size: 11px;
+      background: #065f46;
+      color: #34d399;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    .progress-track {
+      background: var(--border);
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 10px 0 14px 0;
+    }
+    #reading-bar {
+      background: var(--highlight);
+      height: 100%;
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+    .controls-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: #0284c7;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+    }
+    .btn:hover { background: #0369a1; }
+    .btn-secondary { background: #334155; }
+    .btn-secondary:hover { background: #475569; }
+    .btn-accent { background: #d97706; }
+    .btn-accent:hover { background: #b45309; }
+    select {
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      outline: none;
+    }
+    select:focus { border-color: var(--accent); }
+    .summary-text {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      line-height: 1.5;
+      color: #e2e8f0;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+  </style>
 </head>
 <body>
 
-<div class="player-card" id="card" tabindex="0" onclick="this.focus(); window.focus();" title="Haz clic en el reproductor para activar atajos de teclado">
-  <div class="player-content">
-    <!-- Primera Fila: Avatar, Info, Menú, Power/Stop -->
-    <div class="top-row">
-      <div class="meta-group">
-        <div class="avatar" id="avatar-icon">🦅</div>
-        <div class="info">
-          <span class="info-title">Antigravity Voice</span>
-          <span class="info-subtitle" id="track-subtitle">Listo para leer respuesta</span>
-        </div>
-      </div>
-            <div class="right-actions">
-        <button class="badge-btn" onclick="toggleDrawer('text-drawer')" title="Ver texto">
-          📄<span class="btn-lbl"> Texto</span> <span id="text-arrow">▾</span>
-        </button>
-        <button class="badge-btn" onclick="toggleDrawer('settings-drawer')" title="Ajustes">
-          ⚙️<span class="btn-lbl"> Ajustes</span> <span id="set-arrow">▾</span>
-        </button>
-        <button class="badge-btn" onclick="toggleDrawer('shortcuts-drawer')" title="Atajos de teclado">
-          ⌨️<span class="btn-lbl"> Atajos</span> <span id="shortcuts-arrow">▾</span>
-        </button>
-        <button class="badge-btn mic-btn" id="mic-btn" onclick="toggleDictation()" title="Dictado por voz y comandos (Ctrl+Alt+D)">
-          <span id="mic-icon">🎙️</span><span class="btn-lbl"> Dictar</span>
-        </button>
-        <button class="power-btn" onclick="stopSpeech()" title="Detener">
-          ⏻
-        </button>
-      </div>
+<div class="widget-container">
+  <div class="widget-header">
+    <div class="widget-title">
+      <span>🎙️</span> Antigravity Voice Assistant
     </div>
-
-        <!-- Segunda Fila: Slider de Volumen y Controles Multimedia -->
-    <div class="control-row">
-      <div class="volume-group" id="vol-group">
-        <button class="vol-btn" id="vol-btn" onclick="toggleVolumeSlider(event)" title="Mostrar/ocultar volumen">
-          <span id="vol-icon">🔊</span>
-        </button>
-        <div class="vol-slider-wrapper" id="vol-slider-wrap">
-          <div class="slider-track" style="flex:1;">
-            <div class="slider-fill" id="vol-fill" style="width: 100%;"></div>
-            <div class="slider-thumb" id="vol-thumb"></div>
-            <input type="range" class="slider-input" id="vol-range" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)" onchange="onVolumeChangeEnd()" />
-          </div>
-        </div>
-      </div>
-
-      <div class="media-buttons">
-        <button class="ctrl-btn" onclick="prevSection()" title="Sección anterior / Reiniciar (Ctrl+Alt+←)">⏮</button>
-        <button class="ctrl-btn play" id="play-btn" onclick="togglePlay()" title="Reproducir / Pausar (Space / Ctrl+Alt+Space)">▶</button>
-        <button class="ctrl-btn" onclick="nextSection()" title="Siguiente sección (Ctrl+Alt+→)">⏭</button>
-        <button class="ctrl-btn" onclick="stopSpeech()" title="Detener (Ctrl+Alt+S)">⏹</button>
-      </div>
-    </div>
+    <span class="status-badge" id="voice-status">Listo</span>
   </div>
 
-  <!-- Barra de progreso inferior -->
-  <div class="bottom-progress">
-    <div class="bottom-progress-bar" id="reading-bar"></div>
+  <div class="progress-track">
+    <div id="reading-bar"></div>
   </div>
 
-    <!-- Panel Desplegable: Texto Completo (Sin límite de altura + arrastre vertical libre) -->
-  <div class="collapsible-drawer" id="text-drawer">
-    <div class="text-box" id="full-text">
-      Cargando texto de respuesta...
-    </div>
-    <div class="text-footer">
-      <button class="icon-copy-btn" id="copy-md-btn" onclick="copyMarkdownText()" title="Copiar texto en formato Markdown">
-        📋
-      </button>
-    </div>
+  <div class="controls-row">
+    <button class="btn" id="play-btn" onclick="togglePlay()">▶ Escuchar Respuesta</button>
+    <button class="btn btn-secondary" onclick="stopSpeech()">⏹ Detener</button>
+
+    <select id="voice-profile" onchange="changeVoice()">
+      <option value="es-ES-AlvaroNeural">Voz: Álvaro Neural (ES)</option>
+      <option value="es-MX-JorgeNeural">Voz: Jorge Neural (MX)</option>
+      <option value="es-CO-SalomeNeural">Voz: Salomé Neural (CO)</option>
+      <option value="native">Voz: Nativa Sistema</option>
+    </select>
+
+    <select id="speed-select" onchange="changeRate(this.value)">
+      <option value="0.8">0.8x</option>
+      <option value="1.0" selected>1.0x</option>
+      <option value="1.2">1.2x</option>
+      <option value="1.5">1.5x</option>
+    </select>
+
+    <select id="theme-select" onchange="changeTheme(this.value)">
+      <option value="night">Tema: Night</option>
+      <option value="oled">Tema: OLED Black</option>
+      <option value="dracula">Tema: Dracula</option>
+    </select>
   </div>
 
-  <!-- Panel Desplegable: Ajustes -->
-  <div class="collapsible-drawer" id="settings-drawer">
-    <div class="settings-grid">
-      <!-- 1. Catálogo Extendido de 16 Temas -->
-      <div class="setting-item">
-        <label>🎨 Tema Visual (16 opciones)</label>
-        <select id="theme-select" onchange="setTheme(this.value)">
-          <optgroup label="DaisyUI Populares">
-            <option value="night" selected>Night (Azul Cian Oscuro)</option>
-            <option value="dracula">Dracula (Púrpura y Verde)</option>
-            <option value="synthwave">Synthwave (Neón Violeta)</option>
-            <option value="luxury">Luxury (Negro y Dorado)</option>
-            <option value="forest">Forest (Esmeralda)</option>
-            <option value="aqua">Aqua (Turquesa Marino)</option>
-            <option value="cyberpunk">Cyberpunk (Amarillo Alto Contraste)</option>
-            <option value="coffee">Coffee (Ámbar y Moca)</option>
-            <option value="dim">Dim (Gris Oscuro Suave)</option>
-            <option value="sunset">Sunset (Atardecer Cálido)</option>
-            <option value="emerald">Emerald (Claro Alto Contraste)</option>
-          </optgroup>
-          <optgroup label="Estilos Pro & Devs">
-            <option value="nord">Nord (Ártico Glacial)</option>
-            <option value="tokyo-night">Tokyo Night (Azul / Neón Suave)</option>
-            <option value="monokai">Monokai (Código Clásico)</option>
-            <option value="solarized-dark">Solarized Dark (Cian Profundo)</option>
-            <option value="black">Black OLED (Negro Puro)</option>
-          </optgroup>
-        </select>
-      </div>
-
-      <!-- 2. Velocidad: Slider 0.5x a 2.0x con steps de 0.1 -->
-      <div class="setting-item">
-        <label>⚡ Velocidad (0.5x - 2.0x)</label>
-        <div class="range-box">
-          <input type="range" id="rate-slider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="setRate(this.value)" />
-          <span class="range-val" id="rate-val">1.0x</span>
-        </div>
-      </div>
-
-      <!-- 3. Redimensionar Ancho de Widget 50% a 100% -->
-      <div class="setting-item">
-        <label>📐 Ancho Widget</label>
-        <div class="range-box">
-          <input type="range" id="scale-slider" min="50" max="100" step="5" value="100" oninput="setScale(this.value)" />
-          <span class="range-val" id="scale-val">100%</span>
-        </div>
-      </div>
-
-      <!-- 4. Tamaño de Letra A- / A+ -->
-      <div class="setting-item">
-        <label>🔍 Letra Texto</label>
-        <div class="range-box">
-          <input type="range" min="14" max="36" step="2" value="16" oninput="setFontSize(this.value)" />
-          <span class="range-val" id="font-val">16px</span>
-        </div>
-      </div>
-
-      <!-- 5. Opacidad / Transparencia 25% a 100% -->
-      <div class="setting-item">
-        <label>💧 Opacidad Fondo</label>
-        <div class="range-box">
-          <input type="range" min="25" max="100" step="5" value="100" oninput="setOpacity(this.value)" />
-          <span class="range-val" id="opacity-val">100%</span>
-        </div>
-      </div>
-
-      
-      <!-- Modo de Botones -->
-      <div class="setting-item">
-        <label>🔘 Botones</label>
-        <select id="btn-mode-select" onchange="changeButtonMode(this.value)">
-          <option value="both" selected>Iconos + Texto</option>
-          <option value="icons">Solo Iconos</option>
-        </select>
-      </div>
-
-      <!-- 6. Perfiles de Voz Neural de Alta Claridad -->
-      <div class="setting-item" style="grid-column: span 2;">
-        <label>🎙️ Voz y Narrador (Humano / Comprensible)</label>
-        <select id="voice-profile" onchange="setVoiceProfile(this.value)">
-          <option value="alvaro" selected>Álvaro (España - Narrador Profesional, Máxima Claridad)</option>
-          <option value="salome">Salomé (Colombia - Cálida y Expresiva)</option>
-          <option value="jorge">Jorge (México - Masculina Natural)</option>
-          <option value="paloma">Paloma (EE.UU. - Conversacional)</option>
-          <option value="dalia">Dalia (México - Femenina Estándar)</option>
-        </select>
-      </div>
-
-      <!-- 7. Voces del Sistema -->
-      <div class="setting-item" id="sys-voice-item" style="display:none; grid-column: span 2;">
-        <label>🗣️ Voz del Sistema</label>
-        <select id="voice-select" onchange="setSystemVoice(this.value)"></select>
-      </div>
-    </div>
-  </div>
-
-  <!-- Panel Desplegable: Atajos de Teclado -->
-  <div class="collapsible-drawer" id="shortcuts-drawer">
-    <div style="font-weight:bold; margin-bottom:8px; color:var(--player-accent); display:flex; justify-content:space-between; align-items:center;">
-      <span>⌨️ Atajos de Teclado Accesibles</span>
-      <span style="font-size:11px; color:var(--player-subtext);">Control global hands-free</span>
-    </div>
-    <div style="font-size:11px; color:#facc15; margin-bottom:8px; padding:5px 8px; background:rgba(250,204,21,0.1); border-radius:5px; border-left:3px solid #facc15; line-height:1.4;">
-      💡 <strong>Importante:</strong> Haz clic dentro del reproductor para enfocarlo antes de usar los atajos de teclado.
-    </div>
-    <div class="shortcuts-grid">
-      <div class="shortcut-item"><span>Reproducir / Pausa</span><div><kbd>Space</kbd> / <kbd>Ctrl+Alt+Space</kbd></div></div>
-      <div class="shortcut-item"><span>Reiniciar audio / sección</span><div><kbd>Ctrl+Alt+R</kbd></div></div>
-      <div class="shortcut-item"><span>Detener reproducción</span><div><kbd>Ctrl+Alt+S</kbd></div></div>
-      <div class="shortcut-item"><span>Siguiente sección</span><div><kbd>Ctrl+Alt+→</kbd></div></div>
-      <div class="shortcut-item"><span>Sección anterior</span><div><kbd>Ctrl+Alt+←</kbd></div></div>
-      <div class="shortcut-item"><span>Acelerar (+0.1x)</span><div><kbd>Ctrl+Alt+↑</kbd></div></div>
-      <div class="shortcut-item"><span>Desacelerar (-0.1x)</span><div><kbd>Ctrl+Alt+↓</kbd></div></div>
-      <div class="shortcut-item"><span>Silenciar / Desilenciar</span><div><kbd>Ctrl+Alt+M</kbd></div></div>
-      <div class="shortcut-item"><span>Dictado / Comandos de Voz</span><div><kbd>Ctrl+Alt+D</kbd></div></div>
-    </div>
-  </div>
-
-  <!-- Panel Desplegable: Dictado por Voz & Comandos -->
-  <div class="collapsible-drawer" id="dictation-drawer">
-    <div style="font-weight:bold; margin-bottom:6px; color:var(--player-accent); display:flex; justify-content:space-between; align-items:center;">
-      <span>🎙️ Dictado por Voz y Comandos Hands-Free</span>
-      <span id="dictation-status" style="font-size:11px; color:var(--player-subtext);">Listo</span>
-    </div>
-    <div class="dictation-box" id="dictation-result">
-      Haz clic en <strong>"🎙️ Grabar Voz en Chat"</strong> o en el icono de micrófono 🎙️ arriba para hablar durante 5 segundos.
-    </div>
-    
-    <!-- Barra de acciones rápidas para navegador y terminal -->
-    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; align-items:center; justify-content:space-between;">
-      <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button class="browser-btn" id="inchat-record-btn" onclick="startDirectDictation()" style="border:none; cursor:pointer;" title="Grabar 5 segundos desde el micrófono">
-          🎙️ Grabar Voz en Chat (5s)
-        </button>
-        <button class="icon-copy-btn" id="copy-cli-btn" onclick="copyCliCommand()" title="Copiar comando para dictar desde terminal">
-          💻 Copiar CLI
-        </button>
-      </div>
-      <button class="icon-copy-btn" id="copy-dictation-btn" onclick="copyDictationText()" title="Copiar texto dictado al portapapeles">
-        📋 Copiar Prompt
-      </button>
-    </div>
-
-    <!-- Comandos rápidos con 1 clic (sin necesidad de micrófono) -->
-    <div style="margin-top:10px;">
-      <span style="font-size:11px; color:var(--player-subtext); font-weight:600;">Control rápido (1 clic):</span>
-      <div class="command-chips">
-        <button class="chip-btn" onclick="handleVoiceCommand('pausar')">⏸ Pausar</button>
-        <button class="chip-btn" onclick="handleVoiceCommand('continuar')">▶ Continuar</button>
-        <button class="chip-btn" onclick="handleVoiceCommand('siguiente')">⏭ Siguiente</button>
-        <button class="chip-btn" onclick="handleVoiceCommand('anterior')">⏮ Anterior</button>
-        <button class="chip-btn" onclick="handleVoiceCommand('reiniciar')">🔄 Reiniciar</button>
-        <button class="chip-btn" onclick="handleVoiceCommand('más rápido')">⚡ +Velocidad</button>
-        <button class="chip-btn" onclick="handleVoiceCommand('silencio')">🔇 Silenciar</button>
-      </div>
-    </div>
+  <div class="summary-text" id="display-text">
+    Cargando respuesta de Antigravity...
   </div>
 </div>
 
 <div id="raw-text-source" style="display:none;">
-## 🔌 Conversión a Extensión Nativa de Antigravity IDE
+## Asistente de Voz Reiniciado Desde Cero
 
-Hemos transformado el plugin en una extensión nativa completa (`.vsix`) para Antigravity IDE:
-
----
-
-## 1. Integración Nativa en el Entorno
-- **Barra de Estado**: Botones directos `Dictar` y `Antigravity Voice` en la esquina inferior del IDE.
-- **Barra Lateral Dedicada**: Vista webview accesible en la barra de actividades con controles multimedia y temas.
-- **Inserción Directa en el Editor**: Al dictar por voz (<kbd>Ctrl+Alt+D</kbd>), el texto se inserta automáticamente en la posición del cursor en tu archivo de código.
-- **Lectura Contextual**: Haz clic derecho en cualquier fragmento de código para escucharlo con voces neuronales humanas.
+Hemos rediseñado y simplificado la arquitectura para enfocarla 100% en el prompt de Antigravity:
 
 ---
 
-## 2. Instalación en 1 Clic
-- Abre Extensiones con <kbd>Ctrl+Shift+X</kbd>, haz clic en los tres puntos (`...`) y selecciona **Instalar desde VSIX**.
-- Selecciona el archivo `antigravity-voice-assistant-3.0.0.vsix` incluido en el proyecto.
+## 1. Dictado Directo al Prompt de Chat
+- Presiona Control + Alt + D o haz clic en Dictar Prompt.
+- Habla a tu micrófono: tu voz se transcribirá en tiempo real e insertará directo en la caja de prompt de Antigravity.
+- Puedes seguir dictando para refinar tu prompt antes de presionar Enter.
+
+---
+
+## 2. Lectura de Respuestas con Voz Natural
+- Presiona Control + Alt + R o el botón de Reproducir.
+- Escucha la respuesta con síntesis de voz natural y fluida, 100% gratuita y sin ninguna API key externa.
 </div>
 
 <script>
-  const rawTextElem = document.getElementById("raw-text-source");
-  const markdownContent = rawTextElem ? rawTextElem.textContent.trim() : "";
-
-  function renderMarkdown(md) {
-    if (!md) return "";
-    const lines = md.split("\n");
-    let inUl = false;
-    let inOl = false;
-    let out = [];
-
-    const formatInline = (str) => {
-      return str
-        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-        .replace(/\*(.*?)\*/g, "<em>$1</em>")
-        .replace(/`([^`]+)`/g, "<code>$1</code>")
-        .replace(/\[([^\]]+)\]\(([^\)]+)\)/g, "<a href=\"$2\" target=\"_blank\" class=\"md-link\">$1 ↗</a>");
-    };
-
-    for (let i = 0; i < lines.length; i++) {
-      let line = lines[i];
-
-      if (line.match(/^###\s+(.*)$/)) {
-        if (inUl) { out.push("</ul>"); inUl = false; }
-        if (inOl) { out.push("</ol>"); inOl = false; }
-        out.push("<h3>" + formatInline(line.replace(/^###\s+/, "")) + "</h3>");
-      } else if (line.match(/^##\s+(.*)$/)) {
-        if (inUl) { out.push("</ul>"); inUl = false; }
-        if (inOl) { out.push("</ol>"); inOl = false; }
-        out.push("<h2>" + formatInline(line.replace(/^##\s+/, "")) + "</h2>");
-      } else if (line.match(/^#\s+(.*)$/)) {
-        if (inUl) { out.push("</ul>"); inUl = false; }
-        if (inOl) { out.push("</ol>"); inOl = false; }
-        out.push("<h1>" + formatInline(line.replace(/^#\s+/, "")) + "</h1>");
-      } else if (line.match(/^---+$/) || line.match(/^\*\*\*+$/)) {
-        if (inUl) { out.push("</ul>"); inUl = false; }
-        if (inOl) { out.push("</ol>"); inOl = false; }
-        out.push("<hr class=\"md-divider\">");
-      } else if (line.match(/^(\s*)[\-\*]\s+(.*)$/)) {
-        if (inOl) { out.push("</ol>"); inOl = false; }
-        if (!inUl) { out.push("<ul>"); inUl = true; }
-        out.push("<li>" + formatInline(line.replace(/^(\s*)[\-\*]\s+/, "")) + "</li>");
-      } else if (line.match(/^(\s*)\d+\.\s+(.*)$/)) {
-        if (inUl) { out.push("</ul>"); inUl = false; }
-        if (!inOl) { out.push("<ol>"); inOl = true; }
-        out.push("<li>" + formatInline(line.replace(/^(\s*)\d+\.\s+/, "")) + "</li>");
-      } else if (line.trim() === "") {
-        if (inUl) { out.push("</ul>"); inUl = false; }
-        if (inOl) { out.push("</ol>"); inOl = false; }
-      } else {
-        if (inUl) { out.push("</ul>"); inUl = false; }
-        if (inOl) { out.push("</ol>"); inOl = false; }
-        out.push("<p>" + formatInline(line) + "</p>");
-      }
-    }
-
-    if (inUl) out.push("</ul>");
-    if (inOl) out.push("</ol>");
-    return out.join("\n");
-  }
-
-  // --- 1. Normalización Natural para Síntesis Neural de Alta Claridad ---
-  function applyDevPronunciationLexicon(text) {
-    if (!text) return "";
-    let t = text;
-
-    // Quitar emojis que distorsionan la síntesis
-    t = t.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, " ");
-
-    // Bloques de código multilínea: anunciar brevemente
-    t = t.replace(/```[a-zA-Z0-9_-]*\n([\s\S]*?)```/g, ". Bloque de código omitido para agilidad auditiva. ");
-
-    // Expandir atajos y etiquetas amigables
-    t = t.replace(/<kbd>([^<]+)<\/kbd>/gi, " $1 ");
-    t = t.replace(/\bCtrl\+/gi, "Control ");
-    t = t.replace(/\bAlt\+/gi, "Alt ");
-    t = t.replace(/\bShift\+/gi, "Shift ");
-
-    // Quitar cualquier etiqueta HTML residual (<...>)
-    t = t.replace(/<[^>]+>/g, " ");
-
-    // Operadores
-    t = t.replace(/===/g, " estrictamente igual a ");
-    t = t.replace(/!==/g, " diferente de ");
-    t = t.replace(/!=/g, " diferente de ");
-    t = t.replace(/==/g, " igual a ");
-    t = t.replace(/=>/g, " flecha ");
-    t = t.replace(/->/g, " retorna ");
-    t = t.replace(/&&/g, " y ");
-    t = t.replace(/\|\|/g, " o ");
-
-    // Acrónimos que requieren lectura deletreada limpia
-    const lexicon = [
-      [/\bAPIs\b/g, "A P Is"],
-      [/\bAPI\b/g, "A P I"],
-      [/\bCLIs\b/g, "C L Is"],
-      [/\bCLI\b/g, "C L I"],
-      [/\bSQL\b/g, "S Q L"],
-      [/\bPRs\b/gi, "pull requests"],
-      [/\bPR\b/gi, "pull request"],
-      [/\bUUID\b/gi, "U U I D"],
-      [/\bJWT\b/gi, "J W T"],
-      [/\bOAuth\b/gi, "O Auth"],
-      [/\bkubectl\b/gi, "kube control"]
-    ];
-
-    for (const [pattern, replacement] of lexicon) {
-      t = t.replace(pattern, replacement);
-    }
-    t = t.replace(/\s+/g, " ").trim();
-    return t;
-  }
-
-  function prepareTextForSpeech(md) {
-    if (!md) return "";
-    const lines = md.split("\n");
-    let speechLines = [];
-
-    for (let i = 0; i < lines.length; i++) {
-      let line = lines[i].trim();
-      if (!line) continue;
-      if (line.match(/^---+$/) || line.match(/^\*\*\*+$/)) continue;
-
-      // Encabezados: leer el titulo directamente
-      if (line.match(/^#+\s+(.*)$/)) {
-        let title = line.replace(/^#+\s+/, "").replace(/[*`_]/g, "").trim();
-        speechLines.push(title + ".");
-        continue;
-      }
-
-      // Enlaces: [texto](url) -> texto sin prefijos
-      line = line.replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1");
-
-      // Viñetas no ordenadas: leer contenido directo
-      if (line.match(/^[\-\*]\s+(.*)$/)) {
-        let item = line.replace(/^[\-\*]\s+/, "").replace(/[*`_]/g, "").trim();
-        speechLines.push(item + ".");
-        continue;
-      }
-
-      // Listas ordenadas: 1. Titulo -> 1. Titulo
-      let orderedMatch = line.match(/^(\d+)\.\s+(.*)$/);
-      if (orderedMatch) {
-        let num = orderedMatch[1];
-        let item = orderedMatch[2].replace(/[*`_]/g, "").trim();
-        speechLines.push(num + ". " + item + ".");
-        continue;
-      }
-
-      // Parrafos normales
-      line = line.replace(/[*`_~]/g, "").trim();
-      if (!line.endsWith(".") && !line.endsWith(":") && !line.endsWith("?") && !line.endsWith("!")) {
-        line += ".";
-      }
-      speechLines.push(line);
-    }
-    return applyDevPronunciationLexicon(speechLines.join(" "));
-  }
-
-  // --- 2. Segmentación de Secciones (Scrubbing / Section Navigation) ---
-  function parseSections(md) {
-    if (!md) return [{ title: "Inicio", text: "" }];
-    const lines = md.split("\n");
-    let secs = [];
-    let curTitle = "Inicio";
-    let curLines = [];
-
-    for (let i = 0; i < lines.length; i++) {
-      let line = lines[i];
-      let headingMatch = line.match(/^#{1,3}\s+(.*)$/);
-      if (headingMatch) {
-        if (curLines.length > 0) {
-          const processed = prepareTextForSpeech(curLines.join("\n"));
-          if (processed.trim().length > 0) {
-            secs.push({ title: curTitle, text: processed });
-          }
-          curLines = [];
-        }
-        curTitle = headingMatch[1].replace(/[*`_]/g, "").trim();
-      }
-      curLines.push(line);
-    }
-    if (curLines.length > 0) {
-      const processed = prepareTextForSpeech(curLines.join("\n"));
-      if (processed.trim().length > 0) {
-        secs.push({ title: curTitle, text: processed });
-      }
-    }
-    if (secs.length === 0) {
-      secs.push({ title: "Respuesta", text: prepareTextForSpeech(md) });
-    }
-    return secs;
-  }
-
-  const sections = parseSections(markdownContent);
-  let currentSectionIndex = 0;
-  const plainTextToSpeak = sections.map(s => s.text).join(" ");
-  const fullTextElem = document.getElementById("full-text");
-  if (fullTextElem) fullTextElem.innerHTML = renderMarkdown(markdownContent);
-
-  const synth = window.speechSynthesis;
-  let currentVolume = 1.0;
-  let previousVolume = 1.0;
+  let isSpeaking = false;
+  let isPaused = false;
   let currentRate = 1.0;
-  let currentVoiceProfile = "alvaro";
-  let selectedVoiceUri = "";
-  let progressInterval = null;
   let currentUtterance = null;
+  const rawTextElem = document.getElementById("raw-text-source");
+  const rawText = rawTextElem ? rawTextElem.textContent.trim() : "";
+  const displayTextElem = document.getElementById("display-text");
+  const playBtn = document.getElementById("play-btn");
+  const progressBar = document.getElementById("reading-bar");
+  const statusBadge = document.getElementById("voice-status");
 
-  // --- 3. Earcons (Feedback Sonoro Accesible) ---
-  function playEarcon(type) {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      const now = ctx.currentTime;
-
-      if (type === "start") {
-        osc.frequency.setValueAtTime(523.25, now);
-        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08);
-        gain.gain.setValueAtTime(0.04, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-        osc.start(now);
-        osc.stop(now + 0.08);
-      } else if (type === "stop") {
-        osc.frequency.setValueAtTime(659.25, now);
-        osc.frequency.exponentialRampToValueAtTime(523.25, now + 0.08);
-        gain.gain.setValueAtTime(0.04, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-        osc.start(now);
-        osc.stop(now + 0.08);
-      } else if (type === "mic-on") {
-        osc.frequency.setValueAtTime(523.25, now);
-        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.1);
-        gain.gain.setValueAtTime(0.05, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-        osc.start(now);
-        osc.stop(now + 0.1);
-      } else if (type === "mic-off") {
-        osc.frequency.setValueAtTime(783.99, now);
-        osc.frequency.exponentialRampToValueAtTime(523.25, now + 0.1);
-        gain.gain.setValueAtTime(0.05, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-        osc.start(now);
-        osc.stop(now + 0.1);
-      } else if (type === "command") {
-        osc.frequency.setValueAtTime(1046.50, now);
-        osc.frequency.exponentialRampToValueAtTime(1318.51, now + 0.12);
-        gain.gain.setValueAtTime(0.06, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-        osc.start(now);
-        osc.stop(now + 0.12);
-      }
-    } catch (e) {
-      // AudioContext bloqueado o silenciado
-    }
+  // Mostrar el texto limpio en pantalla
+  if (displayTextElem && rawText) {
+    const cleanDisplay = rawText.replace(/##\s*/g, '').replace(/---/g, '').trim();
+    displayTextElem.innerText = cleanDisplay;
   }
 
-  let serverAudio = null;
+  function cleanForSpeech(text) {
+    return text
+      .replace(/```[\s\S]*?```/g, ' Código omitido. ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/[*`_~#]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
   function togglePlay() {
-    if (serverAudio) {
-      if (!serverAudio.paused) {
-        serverAudio.pause();
-        const btn = document.getElementById("play-btn");
-        if (btn) btn.textContent = "▶";
-      } else {
-        serverAudio.play();
-        const btn = document.getElementById("play-btn");
-        if (btn) btn.textContent = "⏸";
-      }
+    if (!('speechSynthesis' in window)) {
+      alert("Tu navegador no soporta síntesis de voz.");
       return;
     }
-    if (synth && synth.speaking && !synth.paused) {
-      synth.pause();
-      const btn = document.getElementById("play-btn");
-      if (btn) btn.textContent = "▶";
-    } else if (synth && synth.paused) {
-      synth.resume();
-      const btn = document.getElementById("play-btn");
-      if (btn) btn.textContent = "⏸";
-    } else {
-      speak(currentSectionIndex);
-    }
-  }
 
-  function speak(startIndex) {
-    if (serverAudio) {
-      try { serverAudio.pause(); } catch(_) {}
-      serverAudio = null;
-    }
-    if (synth) synth.cancel();
-
-    if (typeof startIndex === "number") {
-      currentSectionIndex = Math.max(0, Math.min(sections.length - 1, startIndex));
+    if (isSpeaking && !isPaused) {
+      window.speechSynthesis.pause();
+      isPaused = true;
+      playBtn.innerText = "▶ Reanudar";
+      statusBadge.innerText = "Pausado";
+      statusBadge.style.background = "#b45309";
+      return;
     }
 
-    const currentSec = sections[currentSectionIndex] || { title: "Audio", text: plainTextToSpeak };
-    const textToPlay = currentSec.text || plainTextToSpeak;
-
-    const isEmbeddedInIframe = window.self !== window.top;
-    const hasBrowserVoices = synth && synth.getVoices && synth.getVoices().length > 0;
-
-    // Si estamos en un iframe del IDE o no hay voces del navegador, usamos el motor Server Audio primero:
-    if (isEmbeddedInIframe || !hasBrowserVoices) {
-      playViaServerAudio(textToPlay, currentSec);
-    } else {
-      playViaBrowserSynth(textToPlay, currentSec);
+    if (isPaused) {
+      window.speechSynthesis.resume();
+      isPaused = false;
+      playBtn.innerText = "⏸ Pausar";
+      statusBadge.innerText = "Reproduciendo";
+      statusBadge.style.background = "#0284c7";
+      return;
     }
-  }
 
-  function playViaServerAudio(textToPlay, currentSec) {
-    try {
-      const url = "http://localhost:9000/api/tts?rate=" + currentRate + "&profile=" + encodeURIComponent(currentVoiceProfile) + "&text=" + encodeURIComponent(textToPlay);
-      serverAudio = new Audio(url);
-      serverAudio.volume = currentVolume;
+    const speakableText = cleanForSpeech(rawText);
+    if (!speakableText) return;
 
-      serverAudio.onplay = () => {
-        playEarcon("start");
-        const btn = document.getElementById("play-btn");
-        if (btn) btn.textContent = "⏸";
-        const sub = document.getElementById("track-subtitle");
-        if (sub) {
-          const secPrefix = sections.length > 1 ? "[" + (currentSectionIndex + 1) + "/" + sections.length + "] " : "";
-          sub.textContent = secPrefix + currentSec.title + " (Voz Neural " + currentRate.toFixed(1) + "x)";
-        }
-        startProgressBar();
-      };
+    window.speechSynthesis.cancel();
+    currentUtterance = new SpeechSynthesisUtterance(speakableText);
+    currentUtterance.lang = "es-ES";
+    currentUtterance.rate = currentRate;
 
-      serverAudio.onended = () => {
-        if (currentSectionIndex < sections.length - 1) {
-          currentSectionIndex++;
-          speak(currentSectionIndex);
-        } else {
-          playEarcon("stop");
-          resetPlay();
-        }
-      };
-
-      serverAudio.onerror = () => {
-        playViaBrowserSynth(textToPlay, currentSec);
-      };
-
-      const p = serverAudio.play();
-      if (p && p.catch) {
-        p.catch(() => {
-          playViaBrowserSynth(textToPlay, currentSec);
-        });
-      }
-    } catch (_) {
-      playViaBrowserSynth(textToPlay, currentSec);
+    // Buscar voz en español disponible
+    const voices = window.speechSynthesis.getVoices();
+    const spanishVoice = voices.find(v => v.lang.startsWith("es"));
+    if (spanishVoice) {
+      currentUtterance.voice = spanishVoice;
     }
-  }
 
-  function playViaBrowserSynth(textToPlay, currentSec) {
-    if (!synth) return;
-    setTimeout(() => {
-      const utter = new SpeechSynthesisUtterance(textToPlay);
-      currentUtterance = utter;
-      utter.lang = "es-MX";
-      utter.volume = currentVolume;
-      utter.rate = currentRate;
+    currentUtterance.onstart = () => {
+      isSpeaking = true;
+      isPaused = false;
+      playBtn.innerText = "⏸ Pausar";
+      statusBadge.innerText = "Reproduciendo";
+      statusBadge.style.background = "#0284c7";
+      progressBar.style.width = "20%";
+    };
 
-      if (currentVoiceProfile === "deep") utter.pitch = 0.55;
-      else if (currentVoiceProfile === "clear") utter.pitch = 1.45;
-      else if (currentVoiceProfile === "calm") utter.pitch = 0.9;
-      else utter.pitch = 1.0;
+    currentUtterance.onend = () => {
+      isSpeaking = false;
+      isPaused = false;
+      playBtn.innerText = "▶ Escuchar Respuesta";
+      statusBadge.innerText = "Listo";
+      statusBadge.style.background = "#065f46";
+      progressBar.style.width = "100%";
+      setTimeout(() => { progressBar.style.width = "0%"; }, 800);
+    };
 
-      const sysVoice = getSelectedVoice();
-      if (sysVoice) {
-        utter.voice = sysVoice;
-        utter.lang = sysVoice.lang;
-      }
+    currentUtterance.onerror = () => {
+      isSpeaking = false;
+      isPaused = false;
+      playBtn.innerText = "▶ Escuchar Respuesta";
+      statusBadge.innerText = "Error";
+      statusBadge.style.background = "#991b1b";
+    };
 
-      utter.onstart = () => {
-        playEarcon("start");
-        const btn = document.getElementById("play-btn");
-        if (btn) btn.textContent = "⏸";
-        const sub = document.getElementById("track-subtitle");
-        if (sub) {
-          const secPrefix = sections.length > 1 ? "[" + (currentSectionIndex + 1) + "/" + sections.length + "] " : "";
-          sub.textContent = secPrefix + currentSec.title + " (" + currentRate.toFixed(1) + "x)";
-        }
-        startProgressBar();
-      };
-      utter.onend = () => {
-        if (currentSectionIndex < sections.length - 1) {
-          currentSectionIndex++;
-          speak(currentSectionIndex);
-        } else {
-          playEarcon("stop");
-          resetPlay();
-        }
-      };
-      utter.onerror = () => { resetPlay(); };
-
-      synth.speak(utter);
-    }, 40);
-  }
-
-  function restartSpeech() {
-    currentSectionIndex = 0;
-    speak(0);
-  }
-
-  function nextSection() {
-    if (currentSectionIndex < sections.length - 1) {
-      currentSectionIndex++;
-      speak(currentSectionIndex);
-    } else {
-      speak(currentSectionIndex);
-    }
-  }
-
-  function prevSection() {
-    if (currentSectionIndex > 0) {
-      currentSectionIndex--;
-      speak(currentSectionIndex);
-    } else {
-      restartSpeech();
-    }
-  }
-
-  function toggleMute() {
-    if (currentVolume > 0) {
-      previousVolume = currentVolume;
-      setVolume(0);
-    } else {
-      setVolume(previousVolume || 1.0);
-    }
-    const slider = document.getElementById("vol-range");
-    if (slider) slider.value = currentVolume;
+    window.speechSynthesis.speak(currentUtterance);
   }
 
   function stopSpeech() {
-    if (serverAudio) {
-      try { serverAudio.pause(); } catch(_) {}
-      serverAudio = null;
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
     }
-    if (synth) synth.cancel();
-    playEarcon("stop");
-    resetPlay();
+    isSpeaking = false;
+    isPaused = false;
+    playBtn.innerText = "▶ Escuchar Respuesta";
+    statusBadge.innerText = "Listo";
+    statusBadge.style.background = "#065f46";
+    progressBar.style.width = "0%";
   }
 
-  function resetPlay() {
-    const btn = document.getElementById("play-btn");
-    if (btn) btn.textContent = "▶";
-    const sub = document.getElementById("track-subtitle");
-    if (sub) sub.textContent = "Listo para escuchar";
-    const bar = document.getElementById("reading-bar");
-    if (bar) bar.style.width = "0%";
-    if (progressInterval) clearInterval(progressInterval);
-  }
-
-  function startProgressBar() {
-    const bar = document.getElementById("reading-bar");
-    let pct = 0;
-    if (progressInterval) clearInterval(progressInterval);
-    progressInterval = setInterval(() => {
-      if (pct < 98) {
-        pct += (1.4 * currentRate);
-        if (bar) bar.style.width = Math.min(pct, 100) + "%";
-      }
-    }, 400);
-  }
-
-    function toggleVolumeSlider(e) {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    const wrap = document.getElementById("vol-slider-wrap");
-    if (!wrap) return;
-    wrap.classList.toggle("open");
-  }
-
-    function setVolume(val) {
-    currentVolume = Math.max(0, Math.min(1, parseFloat(val)));
-    const pct = Math.round(currentVolume * 100);
-    const fill = document.getElementById("vol-fill");
-    const thumb = document.getElementById("vol-thumb");
-    const icon = document.getElementById("vol-icon");
-
-    if (fill) fill.style.width = pct + "%";
-    if (thumb) thumb.style.marginLeft = (pct === 0 ? "0px" : "-6px");
-    if (icon) {
-      if (currentVolume === 0) icon.textContent = "🔇";
-      else if (currentVolume < 0.5) icon.textContent = "🔉";
-      else icon.textContent = "🔊";
-    }
-
-    if (currentUtterance) {
-      currentUtterance.volume = currentVolume;
-    }
-    if (serverAudio) {
-      serverAudio.volume = currentVolume;
-    }
-  }
-
-  function onVolumeChangeEnd() {
-    if (synth && synth.speaking && !synth.paused) {
-      speak();
-    }
-  }
-
-  function toggleDrawer(id) {
-    const drawer = document.getElementById(id);
-    if (!drawer) return;
-    const isOpen = drawer.classList.contains("open");
-    document.querySelectorAll(".collapsible-drawer").forEach(d => d.classList.remove("open"));
-    if (!isOpen) drawer.classList.add("open");
-  }
-
-  function setTheme(t) {
-    document.documentElement.setAttribute("data-theme", t);
-  }
-
-  function setFontSize(val) {
-    document.documentElement.style.setProperty("--player-font-size", val + "px");
-    const elem = document.getElementById("font-val");
-    if (elem) elem.textContent = val + "px";
-  }
-
-  function setTextHeight(val) {
-    document.documentElement.style.setProperty("--text-height", val + "px");
-    const elem = document.getElementById("height-val");
-    if (elem) elem.textContent = val + "px";
-  }
-
-  function setScale(val) {
-    const ratio = (parseInt(val, 10) / 100).toFixed(2);
-    document.documentElement.style.setProperty("--player-scale", ratio);
-    const elem = document.getElementById("scale-val");
-    if (elem) elem.textContent = val + "%";
-  }
-
-  function setOpacity(val) {
-    document.documentElement.style.setProperty("--player-opacity", val + "%");
-    const elem = document.getElementById("opacity-val");
-    if (elem) elem.textContent = val + "%";
-  }
-
-  function setRate(val) {
+  function changeRate(val) {
     currentRate = parseFloat(val);
-    const elem = document.getElementById("rate-val");
-    if (elem) elem.textContent = currentRate.toFixed(1) + "x";
-    if (synth && synth.speaking) speak();
-  }
-
-  function setVoiceProfile(p) {
-    currentVoiceProfile = p;
-    if (synth && synth.speaking) speak();
-  }
-
-  function setSystemVoice(uri) {
-    selectedVoiceUri = uri;
-    if (synth && synth.speaking) speak();
-  }
-
-  function loadVoices() {
-    if (!synth) return;
-    const voices = synth.getVoices() || [];
-    const esVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith("es"));
-    const list = esVoices.length > 0 ? esVoices : voices;
-    if (list.length > 1) {
-      const sel = document.getElementById("voice-select");
-      if (sel) {
-        sel.innerHTML = "";
-        list.forEach((v, idx) => {
-          const opt = document.createElement("option");
-          opt.value = v.voiceURI;
-          opt.textContent = (v.lang.startsWith("es") ? "🇪🇸 " : "") + v.name + " (" + v.lang + ")";
-          if (idx === 0 && !selectedVoiceUri) selectedVoiceUri = v.voiceURI;
-          sel.appendChild(opt);
-        });
-        const sysItem = document.getElementById("sys-voice-item");
-        if (sysItem) sysItem.style.display = "block";
-      }
-    }
-  }
-
-  function getSelectedVoice() {
-    if (!synth) return null;
-    const voices = synth.getVoices() || [];
-    const sel = document.getElementById("voice-select");
-    const uri = sel ? sel.value : selectedVoiceUri;
-    return voices.find(v => v.voiceURI === uri) || null;
-  }
-
-  loadVoices();
-  if (synth && synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
-
-  function copyMarkdownText() {
-    if (!markdownContent) return;
-    const btn = document.getElementById("copy-md-btn");
-    navigator.clipboard.writeText(markdownContent).then(() => {
-      if (btn) {
-        btn.textContent = "✓";
-        btn.classList.add("copied");
-        setTimeout(() => {
-          btn.textContent = "📋";
-          btn.classList.remove("copied");
-        }, 1800);
-      }
-    }).catch(err => {
-      // Fallback
-      const ta = document.createElement("textarea");
-      ta.value = markdownContent;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      if (btn) {
-        btn.textContent = "✓";
-        btn.classList.add("copied");
-        setTimeout(() => {
-          btn.textContent = "📋";
-          btn.classList.remove("copied");
-        }, 1800);
-      }
-    });
-  }
-
-  function setButtonMode(mode) {
-    if (mode === "icons") {
-      document.body.classList.add("mode-icons");
-    } else {
-      document.body.classList.remove("mode-icons");
-    }
-  }
-  setButtonMode("icons");
-
-  function changeButtonMode(mode) {
-    if (mode === "icons") {
-      document.body.classList.add("mode-icons");
-    } else {
-      document.body.classList.remove("mode-icons");
-    }
-    localStorage.setItem("voice_assistant_btn_mode", mode);
-    const sel = document.getElementById("btn-mode-select");
-    if (sel) sel.value = mode;
-  }
-
-  // Restaurar al cargar:
-  const savedBtnMode = localStorage.getItem("voice_assistant_btn_mode") || "both";
-  changeButtonMode(savedBtnMode);
-
-  // --- 4. Atajos de Teclado Globales Accesibles ---
-  function handleGlobalKeyDown(e) {
-    const isInput = ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName);
-    const key = (e.key || "").toLowerCase();
-    const hasMod = (e.ctrlKey && e.altKey) || (e.altKey && (key === "d" || key === "r" || key === "s" || key === "m"));
-
-    if (!isInput || hasMod) {
-      if (e.code === "Space" && (!isInput || hasMod)) {
-        e.preventDefault();
-        togglePlay();
-      } else if (hasMod && (e.code === "KeyR" || key === "r")) {
-        e.preventDefault();
-        restartSpeech();
-      } else if (hasMod && (e.code === "KeyS" || key === "s")) {
-        e.preventDefault();
-        stopSpeech();
-      } else if (hasMod && e.code === "ArrowRight") {
-        e.preventDefault();
-        nextSection();
-      } else if (hasMod && e.code === "ArrowLeft") {
-        e.preventDefault();
-        prevSection();
-      } else if (hasMod && e.code === "ArrowUp") {
-        e.preventDefault();
-        const newRate = Math.min(2.0, Math.round((currentRate + 0.1) * 10) / 10);
-        const slider = document.getElementById("rate-slider");
-        if (slider) slider.value = newRate.toFixed(1);
-        setRate(newRate);
-      } else if (hasMod && e.code === "ArrowDown") {
-        e.preventDefault();
-        const newRate = Math.max(0.5, Math.round((currentRate - 0.1) * 10) / 10);
-        const slider = document.getElementById("rate-slider");
-        if (slider) slider.value = newRate.toFixed(1);
-        setRate(newRate);
-      } else if (hasMod && (e.code === "KeyM" || key === "m")) {
-        e.preventDefault();
-        toggleMute();
-      } else if ((hasMod && (e.code === "KeyD" || key === "d")) || (e.altKey && key === "d")) {
-        e.preventDefault();
-        toggleDictation();
-      }
-    }
-  }
-
-  window.addEventListener("keydown", handleGlobalKeyDown);
-  document.addEventListener("keydown", handleGlobalKeyDown);
-
-  // --- 5. Reconocimiento de Voz y Comandos Hands-Free ---
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recognition = null;
-  let isListening = false;
-  let recognizedPromptText = "";
-
-  function initSpeechRecognition() {
-    if (!SpeechRecognition) return null;
-    const rec = new SpeechRecognition();
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.lang = "es-MX";
-
-    rec.onstart = () => {
-      if (dictationWatchdog) { clearTimeout(dictationWatchdog); dictationWatchdog = null; }
-      isListening = true;
-      playEarcon("mic-on");
-      updateMicUI(true);
-      const st = document.getElementById("dictation-status");
-      if (st) {
-        st.textContent = "Escuchando...";
-        st.style.color = "#10b981";
-      }
-    };
-
-    rec.onresult = (event) => {
-      let interim = "";
-      let final = "";
-
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          final += event.results[i][0].transcript;
-        } else {
-          interim += event.results[i][0].transcript;
-        }
-      }
-
-      const spoken = (final || interim).trim();
-      if (!spoken) return;
-
-      const cmdExecuted = handleVoiceCommand(spoken.toLowerCase());
-      const resElem = document.getElementById("dictation-result");
-
-      if (cmdExecuted) {
-        if (resElem) {
-          resElem.innerHTML = "<span class=\"command-tag\">Comando</span> Ejecutado: <em>\"" + spoken + "\"</em>";
-        }
-      } else {
-        if (final) {
-          recognizedPromptText = (recognizedPromptText + " " + final).trim();
-        }
-        if (resElem) {
-          resElem.innerHTML = recognizedPromptText + (interim ? " <span style=\"opacity:0.6;\">" + interim + "</span>" : "");
-        }
-      }
-    };
-
-    rec.onerror = (event) => {
-      if (dictationWatchdog) { clearTimeout(dictationWatchdog); dictationWatchdog = null; }
-      console.warn("Speech recognition error:", event.error);
-      showWebviewRestriction();
-    };
-
-    rec.onend = () => {
-      isListening = false;
-      playEarcon("mic-off");
-      updateMicUI(false);
-      const st = document.getElementById("dictation-status");
-      if (st) {
-        st.textContent = "Micrófono inactivo";
-        st.style.color = "var(--player-subtext)";
-      }
-    };
-
-    return rec;
-  }
-
-  function handleVoiceCommand(text) {
-    if (text.includes("pausa") || text.includes("pausar") || text.includes("detén") || text.includes("detener") || text.includes("para")) {
-      playEarcon("command");
-      if (synth && synth.speaking && !synth.paused) synth.pause();
-      return true;
-    }
-    if (text.includes("continúa") || text.includes("continuar") || text.includes("reanuda") || text.includes("reproducir") || text.includes("reproduce")) {
-      playEarcon("command");
+    if (isSpeaking) {
+      stopSpeech();
       togglePlay();
-      return true;
-    }
-    if (text.includes("siguiente") || text.includes("avanza") || text.includes("siguiente sección")) {
-      playEarcon("command");
-      nextSection();
-      return true;
-    }
-    if (text.includes("anterior") || text.includes("regresa") || text.includes("sección anterior")) {
-      playEarcon("command");
-      prevSection();
-      return true;
-    }
-    if (text.includes("reiniciar") || text.includes("desde el inicio") || text.includes("repite")) {
-      playEarcon("command");
-      restartSpeech();
-      return true;
-    }
-    if (text.includes("más rápido") || text.includes("acelera") || text.includes("acelerar")) {
-      playEarcon("command");
-      const newRate = Math.min(2.0, Math.round((currentRate + 0.1) * 10) / 10);
-      const slider = document.getElementById("rate-slider");
-      if (slider) slider.value = newRate.toFixed(1);
-      setRate(newRate);
-      return true;
-    }
-    if (text.includes("más lento") || text.includes("más despacio") || text.includes("desacelera")) {
-      playEarcon("command");
-      const newRate = Math.max(0.5, Math.round((currentRate - 0.1) * 10) / 10);
-      const slider = document.getElementById("rate-slider");
-      if (slider) slider.value = newRate.toFixed(1);
-      setRate(newRate);
-      return true;
-    }
-    if (text.includes("silencio") || text.includes("mute") || text.includes("silenciar")) {
-      playEarcon("command");
-      toggleMute();
-      return true;
-    }
-    return false;
-  }
-
-  let dictationWatchdog = null;
-
-  function showWebviewRestriction() {
-    updateMicUI(false);
-    isListening = false;
-    if (dictationWatchdog) { clearTimeout(dictationWatchdog); dictationWatchdog = null; }
-    const st = document.getElementById("dictation-status");
-    const resElem = document.getElementById("dictation-result");
-    if (st) {
-      st.textContent = "Micrófono restringido por el IDE";
-      st.style.color = "#ef4444";
-    }
-    if (resElem) {
-      resElem.innerHTML = "<div style=\"background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
-        "<span style=\"color:#ef4444; font-weight:bold; font-size:13px;\">⚠️ El marco incrustado del chat restringe el micrófono</span><br>" +
-        "<span style=\"font-size:11px; color:#ffffff; line-height:1.4;\">Para habilitar el micrófono físico de Windows, abre el servidor local seguro en Chrome o Edge.</span>" +
-        "</div>" +
-        "<div style=\"font-size:12px; color:#ffffff; line-height:1.6;\">" +
-        "👉 Haz clic en <a href=\"http://localhost:9000\" target=\"_blank\" style=\"color:#38bdf8; font-weight:bold; text-decoration:underline;\">http://localhost:9000</a> o pulsa el botón <strong>\"🌐 Abrir en Navegador\"</strong> abajo." +
-        "</div>";
     }
   }
 
-  const ASSISTANT_URL = "http://localhost:9000/?autoDictate=true";
-
-  function openInBrowser() {
-    try {
-      navigator.clipboard.writeText(ASSISTANT_URL);
-    } catch (_) {}
-    try {
-      window.open(ASSISTANT_URL, "_blank");
-    } catch (e) {
-      console.warn("Could not open in browser:", e);
-    }
+  function changeTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
   }
 
-  const vscodeApi = (typeof acquireVsCodeApi === 'function') ? acquireVsCodeApi() : null;
-
-  if (vscodeApi) {
-    window.addEventListener('message', (event) => {
-      const msg = event.data;
-      if (!msg) return;
-      if (msg.command === 'transcription' && msg.text) {
-        recognizedPromptText = msg.text;
-        const resElem = document.getElementById("dictation-result");
-        if (resElem) {
-          resElem.innerHTML = "<div style=\"background:rgba(16, 185, 129, 0.15); border:1px solid #10b981; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
-            "<span style=\"color:#10b981; font-weight:bold; font-size:13px;\">✓ Transcripción Recibida:</span><br>" +
-            "<span style=\"font-size:13px; color:#ffffff;\">\"" + msg.text + "\"</span>" +
-            "</div>";
-        }
-        const st = document.getElementById("dictation-status");
-        if (st) {
-          st.textContent = "✓ Audio transcrito e insertado";
-          st.style.color = "#10b981";
-        }
-      } else if (msg.command === 'stop') {
-        stopSpeech();
-      }
-    });
-  }
-
-  let isDictating = false;
-  const escapeHtml = (s) => (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-  async function startDirectDictation() {
-    if (isDictating) return;
-    isDictating = true;
-
-    const drawer = document.getElementById("dictation-drawer");
-    if (drawer && !drawer.classList.contains("open")) {
-      toggleDrawer("dictation-drawer");
-    }
-
-    const st = document.getElementById("dictation-status");
-    const resElem = document.getElementById("dictation-result");
-    const micBtn = document.getElementById("mic-btn");
-    const recordBtn = document.getElementById("inchat-record-btn");
-
-    if (st) {
-      st.textContent = "🔴 Grabando (5s)... Habla ahora";
-      st.style.color = "#ef4444";
-    }
-    if (micBtn) micBtn.classList.add("active");
-    if (recordBtn) {
-      recordBtn.textContent = "🔴 Grabando (5s)...";
-      recordBtn.style.background = "#ef4444";
-    }
-    if (resElem) {
-      resElem.innerHTML = "<div style=\"background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:6px; padding:10px 12px;\">" +
-        "<span style=\"color:#ef4444; font-weight:bold; font-size:13px;\">🔴 Grabando micrófono (5 segundos)...</span><br>" +
-        "<span style=\"font-size:12px; color:#ffffff;\">Habla tu consulta o instrucción ahora. Al terminar se transcribirá automáticamente.</span>" +
-        "</div>";
-    }
-
-    try {
-      playChime(660, 0.15);
-    } catch (_) {}
-
-    try {
-      const resp = await fetch("http://localhost:9000/api/dictate?duration=5");
-      const data = await resp.json();
-
-      if (data && data.text && data.text.trim()) {
-        const text = data.text.trim();
-        recognizedPromptText = text;
-
-        if (st) {
-          st.textContent = "✓ ¡Transcrito y copiado!";
-          st.style.color = "#22c55e";
-        }
-        if (resElem) {
-          resElem.innerHTML = "<div style=\"background:rgba(34, 197, 94, 0.15); border:1px solid #22c55e; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
-            "<span style=\"color:#22c55e; font-weight:bold; font-size:13px;\">📝 Texto Dictado:</span><br>" +
-            "<span style=\"font-size:13px; color:#ffffff; font-weight:500;\">" + escapeHtml(text) + "</span>" +
-            "</div>" +
-            "<div style=\"font-size:11px; color:#facc15;\">✓ Copiado al portapapeles. Presiona <strong>Ctrl+V</strong> en el prompt de Antigravity para enviarlo.</div>";
-        }
-
-        try {
-          await navigator.clipboard.writeText(text);
-        } catch (_) {}
-
-        try {
-          playChime(880, 0.2);
-        } catch (_) {}
-      } else {
-        if (st) {
-          st.textContent = "Aviso: No se detectó voz";
-          st.style.color = "#facc15";
-        }
-        if (resElem) {
-          resElem.innerHTML = "<div style=\"background:rgba(250, 204, 21, 0.12); border:1px solid #facc15; border-radius:6px; padding:10px 12px;\">" +
-            "<span style=\"color:#facc15; font-weight:bold; font-size:13px;\">⚠️ No se detectó voz clara:</span><br>" +
-            "<span style=\"font-size:12px; color:#ffffff;\">Asegúrate de hablar cerca de tu micrófono de Windows. Haz clic de nuevo en 🎙️ para reintentar.</span>" +
-            "</div>";
-        }
-      }
-    } catch (err) {
-      if (st) {
-        st.textContent = "Error al conectar con servidor de voz";
-        st.style.color = "#ef4444";
-      }
-      if (resElem) {
-        resElem.innerHTML = "<span style=\"color:#ef4444;\">No se pudo contactar al servidor local en http://localhost:9000. Revisa que esté activo.</span>";
-      }
-    } finally {
-      isDictating = false;
-      if (micBtn) micBtn.classList.remove("active");
-      if (recordBtn) {
-        recordBtn.textContent = "🎙️ Grabar Voz en Chat (5s)";
-        recordBtn.style.background = "";
-      }
+  function changeVoice() {
+    if (isSpeaking) {
+      stopSpeech();
+      togglePlay();
     }
   }
-
-  function toggleDictation() {
-    if (vscodeApi) {
-      vscodeApi.postMessage({ command: 'startDictation' });
-      return;
-    }
-    startDirectDictation();
-  }
-
-  function copyCliCommand() {
-    const cmd = "python3 scripts/voice_stt.py --record --duration 5";
-    const btn = document.getElementById("copy-cli-btn");
-    navigator.clipboard.writeText(cmd).then(() => {
-      if (btn) {
-        const orig = btn.innerHTML;
-        btn.innerHTML = "✓ ¡Comando Copiado!";
-        setTimeout(() => { btn.innerHTML = orig; }, 1800);
-      }
-    }).catch(() => {
-      const ta = document.createElement("textarea");
-      ta.value = cmd;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      if (btn) {
-        const orig = btn.innerHTML;
-        btn.innerHTML = "✓ ¡Comando Copiado!";
-        setTimeout(() => { btn.innerHTML = orig; }, 1800);
-      }
-    });
-  }
-
-  function updateMicUI(active) {
-    const btn = document.getElementById("mic-btn");
-    const icon = document.getElementById("mic-icon");
-    if (btn) {
-      if (active) {
-        btn.classList.add("active");
-        if (icon) icon.textContent = "🔴";
-      } else {
-        btn.classList.remove("active");
-        if (icon) icon.textContent = "🎙️";
-      }
-    }
-  }
-
-  function copyDictationText() {
-    if (!recognizedPromptText) return;
-    const btn = document.getElementById("copy-dictation-btn");
-    navigator.clipboard.writeText(recognizedPromptText).then(() => {
-      if (btn) {
-        const orig = btn.innerHTML;
-        btn.textContent = "✓ ¡Copiado!";
-        setTimeout(() => { btn.innerHTML = orig; }, 1800);
-      }
-    }).catch(() => {
-      const ta = document.createElement("textarea");
-      ta.value = recognizedPromptText;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      if (btn) {
-        const orig = btn.innerHTML;
-        btn.textContent = "✓ ¡Copiado!";
-        setTimeout(() => { btn.innerHTML = orig; }, 1800);
-      }
-    });
-  }
-
-  // Auto-iniciar dictado si se abrió con ?autoDictate=true en navegador
-  try {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("autoDictate") === "true") {
-      window.addEventListener("load", () => {
-        setTimeout(() => {
-          toggleDictation();
-        }, 500);
-      });
-    }
-  } catch (_) {}
-
 </script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 {
   "name": "antigravity-voice-assistant",
   "displayName": "Antigravity Voice Assistant",
-  "description": "Accessible Voice Assistant, Speech Dictation & Audio Player for Antigravity IDE (WCAG 2.1 AAA, Neural TTS, Low-Vision Accessibility)",
-  "version": "3.0.0",
+  "description": "Asistente de voz accesible para el chat y prompt de Antigravity IDE (Dictado de prompts por voz y lectura con síntesis neuronal)",
+  "version": "3.1.0",
   "publisher": "luisfdocelis",
   "license": "MIT",
   "repository": {
@@ -15,24 +15,21 @@
   "categories": [
     "Google",
     "Voice",
-    "Neural TTS",
     "Accessibility",
     "Other"
   ],
   "keywords": [
     "voice",
-    "accessibility",
+    "prompt",
+    "antigravity",
+    "dictation",
     "tts",
     "stt",
-    "dictation",
-    "screen-reader",
-    "antigravity",
-    "audio"
+    "accessibility"
   ],
   "main": "./extension.js",
   "scripts": {
     "package": "npx -y @vscode/vsce package",
-    "package:force": "npx -y @vscode/vsce package --allow-missing-repository --no-git-tag-version",
     "verify": "bash .agents/scripts/verify.sh"
   },
   "activationEvents": [
@@ -41,71 +38,29 @@
   "contributes": {
     "commands": [
       {
-        "command": "antigravity-voice.dictate",
-        "title": "Antigravity Voice: Dictar por Voz con Micrófono",
+        "command": "antigravity-voice.dictatePrompt",
+        "title": "Antigravity Voice: Dictar Prompt por Voz",
         "icon": "$(mic)"
       },
       {
-        "command": "antigravity-voice.readSelection",
-        "title": "Antigravity Voice: Leer Código Seleccionado",
+        "command": "antigravity-voice.readResponse",
+        "title": "Antigravity Voice: Leer Respuesta o Selección",
         "icon": "$(unmute)"
       },
       {
         "command": "antigravity-voice.stopAudio",
         "title": "Antigravity Voice: Detener Audio",
         "icon": "$(mute)"
-      },
-      {
-        "command": "antigravity-voice.openPlayer",
-        "title": "Antigravity Voice: Abrir Reproductor en Barra Lateral",
-        "icon": "$(unmute)"
-      },
-      {
-        "command": "antigravity-voice.restartServer",
-        "title": "Antigravity Voice: Reiniciar Servidor Local de Voz",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "antigravity-voice.exportPodcast",
-        "title": "Antigravity Voice: Exportar como Podcast de Audio",
-        "icon": "$(file-media)"
       }
     ],
-    "chatParticipants": [
-      {
-        "id": "antigravity.voice",
-        "name": "voice",
-        "fullName": "Antigravity Voice",
-        "description": "Asistente de voz accesible con síntesis neuronal y dictado",
-        "isSticky": true
-      }
-    ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "antigravity-voice-sidebar",
-          "title": "Antigravity Voice",
-          "icon": "$(unmute)"
-        }
-      ]
-    },
-    "views": {
-      "antigravity-voice-sidebar": [
-        {
-          "id": "antigravity-voice.assistantView",
-          "name": "Asistente Accesible",
-          "type": "webview"
-        }
-      ]
-    },
     "keybindings": [
       {
-        "command": "antigravity-voice.dictate",
+        "command": "antigravity-voice.dictatePrompt",
         "key": "ctrl+alt+d",
         "mac": "cmd+alt+d"
       },
       {
-        "command": "antigravity-voice.readSelection",
+        "command": "antigravity-voice.readResponse",
         "key": "ctrl+alt+r",
         "mac": "cmd+alt+r"
       },
@@ -115,48 +70,36 @@
         "mac": "cmd+alt+s"
       }
     ],
-    "menus": {
-      "editor/context": [
-        {
-          "command": "antigravity-voice.readSelection",
-          "group": "antigravity-voice@1"
-        },
-        {
-          "command": "antigravity-voice.dictate",
-          "group": "antigravity-voice@2"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "antigravity-voice.exportPodcast",
-          "when": "resourceExtname == .md",
-          "group": "antigravity-voice@1"
-        }
-      ]
-    },
     "configuration": {
-      "title": "Antigravity Voice Assistant",
+      "title": "Antigravity Voice",
       "properties": {
-        "antigravityVoice.serverPort": {
-          "type": "number",
-          "default": 9000,
-          "description": "Puerto para el servidor local de voz y síntesis neuronal."
+        "antigravityVoice.voice": {
+          "type": "string",
+          "default": "es-ES-AlvaroNeural",
+          "description": "Voz neural para síntesis de lectura",
+          "enum": [
+            "es-ES-AlvaroNeural",
+            "es-ES-ElviraNeural",
+            "es-MX-JorgeNeural",
+            "es-MX-DaliaNeural",
+            "es-CO-SalomeNeural",
+            "es-US-PalomaNeural"
+          ]
         },
-        "antigravityVoice.dictationDuration": {
+        "antigravityVoice.dictateDuration": {
           "type": "number",
           "default": 5,
-          "description": "Duración en segundos para la captura del micrófono de voz."
+          "description": "Duración en segundos de la captura de voz para el dictado"
         },
-        "antigravityVoice.voiceProfile": {
+        "antigravityVoice.language": {
           "type": "string",
-          "enum": [
-            "natural",
-            "clear",
-            "calm",
-            "deep"
-          ],
-          "default": "natural",
-          "description": "Perfil de voz neuronal por defecto."
+          "default": "es-ES",
+          "description": "Código de idioma para reconocimiento de voz (es-ES, es-MX, en-US)"
+        },
+        "antigravityVoice.rate": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Velocidad de reproducción de la voz (0.8 a 1.5)"
         }
       }
     }

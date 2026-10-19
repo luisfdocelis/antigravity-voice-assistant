@@ -42,7 +42,7 @@ echo -e "${GREEN}✔ plugin.json es válido y estructurado.${NC}"
 # 2. Validación de Scripts Python (CLI)
 echo -e "\n${YELLOW}[2/4] Validando scripts Python y sintaxis CLI...${NC}"
 python3 -m py_compile scripts/*.py
-python3 scripts/voice_tts.py --help > /dev/null
+python3 scripts/voice_engine.py --help > /dev/null
 echo -e "${GREEN}✔ Scripts de scripts/*.py compilados y validados.${NC}"
 
 # 3. Validación de Plantillas HTML y Artefactos
