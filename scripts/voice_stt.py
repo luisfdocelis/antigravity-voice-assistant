@@ -66,7 +66,7 @@ def get_windows_temp_dir() -> tuple:
     return "/tmp", "C:\\Windows\\Temp"
 
 def record_windows_powershell(duration: int = 5, output_wav: str = None) -> str:
-    """Captura audio del micrófono de Windows usando un script temporal .ps1 con la API nativa WinMM."""
+    """Captura audio del micrófono de Windows usando P/Invoke nativo waveInOpen en 16-bit PCM de alta fidelidad."""
     ps_exe = get_powershell_executable()
     if not ps_exe:
         return ""
@@ -87,17 +87,118 @@ def record_windows_powershell(duration: int = 5, output_wav: str = None) -> str:
 
     ps_code = f"""Add-Type -TypeDefinition @"
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
-public class WinMM {{
-    [DllImport("winmm.dll", EntryPoint="mciSendStringA", CharSet=CharSet.Ansi)]
-    public static extern int mciSendString(string command, string buffer, int bufferSize, IntPtr hwndCallback);
+using System.Threading;
+
+public class DirectRecorder {{
+    [StructLayout(LayoutKind.Sequential)]
+    public struct WAVEFORMATEX {{
+        public ushort wFormatTag;
+        public ushort nChannels;
+        public uint nSamplesPerSec;
+        public uint nAvgBytesPerSec;
+        public ushort nBlockAlign;
+        public ushort wBitsPerSample;
+        public ushort cbSize;
+    }}
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct WAVEHDR {{
+        public IntPtr lpData;
+        public uint dwBufferLength;
+        public uint dwBytesRecorded;
+        public IntPtr dwUser;
+        public uint dwFlags;
+        public uint dwLoops;
+        public IntPtr lpNext;
+        public IntPtr reserved;
+    }}
+
+    [DllImport("winmm.dll")]
+    public static extern int waveInOpen(out IntPtr hWaveIn, int uDeviceID, ref WAVEFORMATEX lpFormat, IntPtr dwCallback, IntPtr dwInstance, int fdwOpen);
+    [DllImport("winmm.dll")]
+    public static extern int waveInPrepareHeader(IntPtr hWaveIn, ref WAVEHDR lpWaveInHdr, int uSize);
+    [DllImport("winmm.dll")]
+    public static extern int waveInAddBuffer(IntPtr hWaveIn, ref WAVEHDR lpWaveInHdr, int uSize);
+    [DllImport("winmm.dll")]
+    public static extern int waveInStart(IntPtr hWaveIn);
+    [DllImport("winmm.dll")]
+    public static extern int waveInStop(IntPtr hWaveIn);
+    [DllImport("winmm.dll")]
+    public static extern int waveInReset(IntPtr hWaveIn);
+    [DllImport("winmm.dll")]
+    public static extern int waveInClose(IntPtr hWaveIn);
+
+    public static void Record(string outputPath, int seconds) {{
+        ushort channels = 2;
+        uint sampleRate = 44100;
+        ushort bitsPerSample = 16;
+        ushort blockAlign = (ushort)(channels * (bitsPerSample / 8));
+        uint avgBytesPerSec = sampleRate * blockAlign;
+
+        WAVEFORMATEX wfx = new WAVEFORMATEX();
+        wfx.wFormatTag = 1;
+        wfx.nChannels = channels;
+        wfx.nSamplesPerSec = sampleRate;
+        wfx.wBitsPerSample = bitsPerSample;
+        wfx.nBlockAlign = blockAlign;
+        wfx.nAvgBytesPerSec = avgBytesPerSec;
+        wfx.cbSize = 0;
+
+        IntPtr hWaveIn;
+        int res = waveInOpen(out hWaveIn, 0, ref wfx, IntPtr.Zero, IntPtr.Zero, 0);
+        if (res != 0) {{
+            res = waveInOpen(out hWaveIn, -1, ref wfx, IntPtr.Zero, IntPtr.Zero, 0);
+        }}
+        if (res != 0) {{
+            Console.WriteLine("waveInOpen error: " + res);
+            return;
+        }}
+
+        int bufferSize = (int)(avgBytesPerSec * seconds);
+        IntPtr pBuffer = Marshal.AllocHGlobal(bufferSize);
+
+        WAVEHDR header = new WAVEHDR();
+        header.lpData = pBuffer;
+        header.dwBufferLength = (uint)bufferSize;
+        header.dwFlags = 0;
+
+        waveInPrepareHeader(hWaveIn, ref header, Marshal.SizeOf(header));
+        waveInAddBuffer(hWaveIn, ref header, Marshal.SizeOf(header));
+        waveInStart(hWaveIn);
+
+        Thread.Sleep(seconds * 1000);
+
+        waveInStop(hWaveIn);
+        waveInReset(hWaveIn);
+        waveInClose(hWaveIn);
+
+        byte[] audioBytes = new byte[header.dwBytesRecorded];
+        Marshal.Copy(pBuffer, audioBytes, 0, (int)header.dwBytesRecorded);
+        Marshal.FreeHGlobal(pBuffer);
+
+        using (FileStream fs = new FileStream(outputPath, FileMode.Create))
+        using (BinaryWriter bw = new BinaryWriter(fs)) {{
+            bw.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+            bw.Write((uint)(36 + audioBytes.Length));
+            bw.Write(System.Text.Encoding.ASCII.GetBytes("WAVE"));
+            bw.Write(System.Text.Encoding.ASCII.GetBytes("fmt "));
+            bw.Write((uint)16);
+            bw.Write((ushort)1);
+            bw.Write(channels);
+            bw.Write(sampleRate);
+            bw.Write(avgBytesPerSec);
+            bw.Write(blockAlign);
+            bw.Write(bitsPerSample);
+            bw.Write(System.Text.Encoding.ASCII.GetBytes("data"));
+            bw.Write((uint)audioBytes.Length);
+            bw.Write(audioBytes);
+        }}
+    }}
 }}
 "@
-[WinMM]::mciSendString("open new type waveaudio alias recsound", [string]::Empty, 0, [IntPtr]::Zero)
-[WinMM]::mciSendString("record recsound", [string]::Empty, 0, [IntPtr]::Zero)
-Start-Sleep -Seconds {duration}
-[WinMM]::mciSendString("save recsound {win_wav_path}", [string]::Empty, 0, [IntPtr]::Zero)
-[WinMM]::mciSendString("close recsound", [string]::Empty, 0, [IntPtr]::Zero)
+[DirectRecorder]::Record("{win_wav_path}", {duration})
 """
 
     print(f"[🎙️] Grabando audio con micrófono de Windows durante {duration} segundos... (Habla ahora)", file=sys.stderr)
@@ -106,7 +207,7 @@ Start-Sleep -Seconds {duration}
         with open(wsl_ps1_path, "w", encoding="utf-8") as f:
             f.write(ps_code)
 
-        subprocess.run([ps_exe, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", win_ps1_path],
+        subprocess.run([ps_exe, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", win_ps1_path],
                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         if os.path.exists(wsl_wav_path) and os.path.getsize(wsl_wav_path) > 0:
