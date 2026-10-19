@@ -6,7 +6,6 @@
   "license": "MIT",
   "homepage": "https://github.com/luisfdocelis/antigravity-voice-assistant",
   "suggestedPrompts": [
-    "/voice — Activar Antigravity Voice en el chat",
     "Antigravity Voice: Dictar por voz con micrófono",
     "Antigravity Voice: Abrir reproductor accesible",
     "Antigravity Voice: Iniciar servidor local en localhost:9000"
