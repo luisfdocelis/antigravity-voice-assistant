@@ -30,10 +30,21 @@ Provides an elegant, compact media-player-style voice assistant with multilingua
 
 ---
 
-## 🚀 Installation in Antigravity
+---
 
-### Global Installation (Recommended)
+## 🚀 Installation & Integration
 
+### Option 1: Native Antigravity IDE Extension (.vsix) — Recommended
+Install directly as a native extension inside **Antigravity IDE** or **VS Code**:
+
+1. In Antigravity IDE, press <kbd>Ctrl + Shift + X</kbd> to open Extensions.
+2. Click the `...` menu (*Views and More Actions*) at the top-right of the Extensions panel.
+3. Select **"Install from VSIX..."** (*Instalar desde VSIX...*).
+4. Select `antigravity-voice-assistant-3.0.0.vsix` located in the root of this repository.
+
+See [**Native Extension Guide**](docs/EXTENSION_GUIDE.md) for full commands, shortcuts, and sidebar setup.
+
+### Option 2: Global Plugin Installation
 Clone this repository into your Antigravity plugins directory:
 
 ```bash
@@ -48,7 +59,8 @@ Antigravity will automatically detect the plugin across all your workspaces and 
 
 For complete technical and user documentation, see:
 
-- 📖 [**User & Usage Guide**](docs/USER_GUIDE.md): Installation, media player controls, accessibility options, and split-tab setup.
+- 🔌 [**Native Extension Guide**](docs/EXTENSION_GUIDE.md): VSIX installation, status bar controls, sidebar webview, and direct editor insertion.
+- 📖 [**User & Usage Guide**](docs/USER_GUIDE.md): Media player controls, accessibility options, and split-tab setup.
 - 🏗️ [**Architecture & Design**](docs/ARCHITECTURE.md): Multi-engine overview, cadence formatting rules, and component breakdown.
 - 💻 [**CLI & Developer Reference**](docs/CLI_REFERENCE.md): Standalone CLI bridge usage, supported OS engines, and widget extension tips.
 - 🗺️ [**Product Roadmap**](docs/ROADMAP.md): Evolution plan, upcoming features (v1.2, v2.0, v3.0), and accessibility milestones.

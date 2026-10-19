@@ -1660,11 +1660,54 @@ Hemos consolidado la Solución 2 como el estándar operativo del asistente de vo
     }
   }
 
+  const vscodeApi = (typeof acquireVsCodeApi === 'function') ? acquireVsCodeApi() : null;
+
+  if (vscodeApi) {
+    window.addEventListener('message', (event) => {
+      const msg = event.data;
+      if (!msg) return;
+      if (msg.command === 'transcription' && msg.text) {
+        recognizedPromptText = msg.text;
+        const resElem = document.getElementById("dictation-result");
+        if (resElem) {
+          resElem.innerHTML = "<div style=\"background:rgba(16, 185, 129, 0.15); border:1px solid #10b981; border-radius:6px; padding:10px 12px; margin-bottom:8px;\">" +
+            "<span style=\"color:#10b981; font-weight:bold; font-size:13px;\">✓ Transcripción Recibida:</span><br>" +
+            "<span style=\"font-size:13px; color:#ffffff;\">\"" + msg.text + "\"</span>" +
+            "</div>";
+        }
+        const st = document.getElementById("dictation-status");
+        if (st) {
+          st.textContent = "✓ Audio transcrito e insertado";
+          st.style.color = "#10b981";
+        }
+      } else if (msg.command === 'stop') {
+        stopSpeech();
+      }
+    });
+  }
+
   function toggleDictation() {
     const isEmbeddedInIframe = window.self !== window.top;
     const drawer = document.getElementById("dictation-drawer");
     if (drawer && !drawer.classList.contains("open")) {
       toggleDrawer("dictation-drawer");
+    }
+
+    if (vscodeApi) {
+      vscodeApi.postMessage({ command: 'startDictation' });
+      const st = document.getElementById("dictation-status");
+      const resElem = document.getElementById("dictation-result");
+      if (st) {
+        st.textContent = "🎙️ Grabando micrófono de Windows...";
+        st.style.color = "#ef4444";
+      }
+      if (resElem) {
+        resElem.innerHTML = "<div style=\"background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:6px; padding:10px 12px;\">" +
+          "<span style=\"color:#ef4444; font-weight:bold; font-size:13px;\">🔴 Grabando desde la extensión nativa...</span><br>" +
+          "<span style=\"font-size:12px; color:#ffffff;\">Habla ahora con tu micrófono de Windows. El texto se insertará directamente en el editor.</span>" +
+          "</div>";
+      }
+      return;
     }
 
     if (isEmbeddedInIframe) {

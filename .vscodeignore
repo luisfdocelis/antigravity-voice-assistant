@@ -1,0 +1,8 @@
+.git/**
+.github/**
+.agents/scripts/scratch/**
+*.vsix
+**/*.pyc
+__pycache__/**
+.DS_Store
+/tmp/**
