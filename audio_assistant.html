@@ -780,22 +780,23 @@
 </div>
 
 <div id="raw-text-source" style="display:none;">
-## 🎙️ Arquitectura Híbrida Establecida (Solución 2)
+## 🔌 Conversión a Extensión Nativa de Antigravity IDE
 
-Hemos consolidado la Solución 2 como el estándar operativo del asistente de voz:
-
----
-
-## 1. Rendimiento y Calidad Auditiva
-- **Renderizado Visual Inmediato**: La tarjeta y los controles cargan al instante dentro de Antigravity IDE sin parpadeos ni latencia.
-- **Audio Neuronal en Tiempo Real**: Cada reproducción se transmite en vivo desde el servidor local (puerto 9000) usando las voces humanas de Microsoft Neural TTS (Dalia, Álvaro, Jorge).
-- **Fluidez Absoluta**: Modula velocidad, volumen y perfiles vocales conservando siempre la claridad humana.
+Hemos transformado el plugin en una extensión nativa completa (`.vsix`) para Antigravity IDE:
 
 ---
 
-## 2. Dictado y Comandos Hands-Free
-- **Micrófono de Windows**: Abre http://localhost:9000/?autoDictate=true en Chrome o Edge para dictado continuo con transcripción en vivo.
-- **Grabación por Terminal**: Ejecuta python3 scripts/voice_stt.py --record --duration 5
+## 1. Integración Nativa en el Entorno
+- **Barra de Estado**: Botones directos `Dictar` y `Antigravity Voice` en la esquina inferior del IDE.
+- **Barra Lateral Dedicada**: Vista webview accesible en la barra de actividades con controles multimedia y temas.
+- **Inserción Directa en el Editor**: Al dictar por voz (<kbd>Ctrl+Alt+D</kbd>), el texto se inserta automáticamente en la posición del cursor en tu archivo de código.
+- **Lectura Contextual**: Haz clic derecho en cualquier fragmento de código para escucharlo con voces neuronales humanas.
+
+---
+
+## 2. Instalación en 1 Clic
+- Abre Extensiones con <kbd>Ctrl+Shift+X</kbd>, haz clic en los tres puntos (`...`) y selecciona **Instalar desde VSIX**.
+- Selecciona el archivo `antigravity-voice-assistant-3.0.0.vsix` incluido en el proyecto.
 </div>
 
 <script>
