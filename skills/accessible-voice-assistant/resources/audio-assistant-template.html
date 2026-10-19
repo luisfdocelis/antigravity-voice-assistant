@@ -1789,41 +1789,6 @@ Hemos transformado el plugin en una extensión nativa completa (`.vsix`) para An
     startDirectDictation();
   }
 
-    // Si ya estamos en el navegador con contexto seguro (localhost:9000):
-    const st = document.getElementById("dictation-status");
-    const resElem = document.getElementById("dictation-result");
-
-    if (!SpeechRecognition) {
-      if (st) { st.textContent = "Voz no disponible en este navegador"; st.style.color = "#ef4444"; }
-      if (resElem) { resElem.innerHTML = "<span style=\"color:#ef4444;\">Web Speech API no está soportada en este navegador. Usa Google Chrome o Microsoft Edge.</span>"; }
-      return;
-    }
-
-    if (!recognition) {
-      try {
-        recognition = initSpeechRecognition();
-      } catch (err) {
-        console.warn("Recognition init error:", err);
-        return;
-      }
-    }
-    if (!recognition) return;
-
-    if (isListening) {
-      recognition.stop();
-    } else {
-      if (st) {
-        st.textContent = "Iniciando micrófono...";
-        st.style.color = "#38bdf8";
-      }
-      try {
-        recognition.start();
-      } catch (e) {
-        console.warn("Recognition start error:", e);
-      }
-    }
-  }
-
   function copyCliCommand() {
     const cmd = "python3 scripts/voice_stt.py --record --duration 5";
     const btn = document.getElementById("copy-cli-btn");
