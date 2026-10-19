@@ -176,13 +176,46 @@ function resetDictateButton() {
 async function handleReadResponse(context, engineScript) {
   let textToSpeak = '';
 
-  // 1. Si hay texto seleccionado en el editor activo
+  // 1. Prioridad: Si el usuario seleccionó texto en el editor activo, leer su selección
   const editor = vscode.window.activeTextEditor;
   if (editor && !editor.selection.isEmpty) {
     textToSpeak = editor.document.getText(editor.selection).trim();
   }
 
-  // 2. Si no hay selección, leer del portapapeles
+  // 2. Si no hay selección, leer la última respuesta generada por Antigravity
+  if (!textToSpeak) {
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri?.fsPath || context.extensionPath;
+    const candidatePaths = [
+      path.join(workspaceRoot, 'scripts', 'last_response.txt'),
+      path.join(context.extensionPath, 'scripts', 'last_response.txt'),
+      path.join(workspaceRoot, 'audio_assistant.html'),
+      path.join(context.extensionPath, 'audio_assistant.html')
+    ];
+
+    for (const p of candidatePaths) {
+      if (fs.existsSync(p)) {
+        try {
+          const raw = fs.readFileSync(p, 'utf8');
+          if (p.endsWith('.html')) {
+            const match = raw.match(/<div id="raw-text-source"[^>]*>([\s\S]*?)<\/div>/i);
+            if (match && match[1] && match[1].trim().length > 10) {
+              textToSpeak = match[1]
+                .replace(/##\s*/g, '')
+                .replace(/---/g, '')
+                .replace(/[*`_~#]/g, '')
+                .trim();
+              break;
+            }
+          } else if (raw.trim().length > 5) {
+            textToSpeak = raw.trim();
+            break;
+          }
+        } catch (_) {}
+      }
+    }
+  }
+
+  // 3. Fallback: solo si no hay respuesta de Antigravity ni selección, revisar portapapeles
   if (!textToSpeak) {
     try {
       const clipboard = await vscode.env.clipboard.readText();

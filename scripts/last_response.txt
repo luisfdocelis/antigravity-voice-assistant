@@ -1,0 +1,1 @@
+Hemos actualizado la función Leer Respuesta para que priorice la respuesta generada por Antigravity en lugar del portapapeles. Ahora lee automáticamente la última respuesta del chat o el texto que selecciones en tu editor.
