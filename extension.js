@@ -112,6 +112,21 @@ function activate(context) {
     await exportPodcast(targetUri.fsPath, podcastScript);
   });
   context.subscriptions.push(exportPodcastCmd);
+
+  // --- 10. Participante de Chat (@voice) en el Prompt de Antigravity IDE ---
+  try {
+    if (vscode.chat && typeof vscode.chat.createChatParticipant === 'function') {
+      const participant = vscode.chat.createChatParticipant('antigravity.voice', async (request, chatContext, response, token) => {
+        const artifactPath = path.join(extensionRoot, 'audio_assistant.html');
+        response.markdown(`<agent-embed src="file://${artifactPath}"></agent-embed>\n\n`);
+        response.markdown(`## 🎙️ Antigravity Voice Assistant\n\nHas consultado: *"${request.prompt}"*\n\nPulsa **▶** en el reproductor de arriba para escuchar la respuesta con la voz neuronal humana.`);
+      });
+      context.subscriptions.push(participant);
+      console.log('[Antigravity Voice] Participante @voice registrado en el chat prompt.');
+    }
+  } catch (chatErr) {
+    console.log('[Antigravity Voice] Chat Participant no soportado en esta versión:', chatErr.message);
+  }
 }
 
 /**

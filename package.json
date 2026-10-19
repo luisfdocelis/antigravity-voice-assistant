@@ -13,6 +13,9 @@
     "vscode": "^1.74.0"
   },
   "categories": [
+    "Google",
+    "Voice",
+    "Neural TTS",
     "Accessibility",
     "Other"
   ],
@@ -66,6 +69,15 @@
         "command": "antigravity-voice.exportPodcast",
         "title": "Antigravity Voice: Exportar como Podcast de Audio",
         "icon": "$(file-media)"
+      }
+    ],
+    "chatParticipants": [
+      {
+        "id": "antigravity.voice",
+        "name": "voice",
+        "fullName": "Antigravity Voice",
+        "description": "Asistente de voz accesible con síntesis neuronal y dictado",
+        "isSticky": true
       }
     ],
     "viewsContainers": {
